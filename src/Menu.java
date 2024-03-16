@@ -37,7 +37,7 @@ public class Menu {
         add(beasts.get(2), 30, 5, 3, 3, 6, 0);
         add(beasts.get(3), 50, 2, 2, 8, 2, 0);
         add(beasts.get(4), 25, 5, 2, 2, 5, 0);
-        add("Dominator", 100, 100, 100, 100, 100, 0);
+        add("Dominator", 100, 100, 100, 0, 100, 0);
     }
 
     @Override

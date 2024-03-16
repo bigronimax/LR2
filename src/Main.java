@@ -1,14 +1,48 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
         Menu menu = new Menu();
+        String PATH = "C://Users/ronim/Downloads/maps/";
         ArrayList<String> heroes;
         int money = 50;
         int heroesCost = 0;
+
+        while(true) {
+            Scanner sc = new Scanner(System.in);
+            System.out.println("1. Начать игру\n2. Выбрать карту");
+            int input = sc.nextInt();
+            if (input == 1)
+                break;
+            else if (input == 2) {
+                System.out.println("Выберите карту (полное имя файла):");
+                File dir = new File(PATH);
+                if(dir.isDirectory())
+                {
+                    for(File item : dir.listFiles()){
+                        System.out.println(item.getName());
+                    }
+                }
+                String mapName = sc.nextLine();
+                System.out.println(PATH + mapName);
+                File map = new File(PATH + mapName);
+
+                try(FileReader reader = new FileReader(map))
+                {
+                    int c;
+                    while((c=reader.read())!=-1){
+                        System.out.print((char)c);
+                    }
+                }
+                catch(IOException ex){
+                    System.out.println(ex.getMessage());
+                }
+            }
+        }
 
         while (true) {
             Scanner sc = new Scanner(System.in);
@@ -45,14 +79,14 @@ public class Main {
             break;
         }
 
-        Battlefield field = new Battlefield(6, menu, heroes, 3, 3, true);
+        Battlefield field = new Battlefield(10, menu, heroes, 1, 5, true);
         HashMap<Character, Enemy> enemiesObjects = field.getEnemiesObjects();
         HashMap<Character, Hero> heroesObjects = field.getHeroesObjects();
         HashMap<Character, Beast> beastsObjects = field.getBeastsObjects();
         System.out.println(field);
 
-        while (field.getHeroesCount() != 0 && field.getEnemyCount() + field.getBeastsCount() != 0) {
-            while (field.getMoves() + field.getAttacks() != 0 && field.getEnemyCount() + field.getBeastsCount() != 0) {
+        while (field.getHeroesCount() + field.getEnemyCount() != 0 && field.getBeastsCount() + field.getHeroesCount() != 0 && field.getBeastsCount() + field.getEnemyCount() != 0) {
+            while (field.getMoves() + field.getAttacks() != 0 && field.getEnemyCount() + field.getBeastsCount() != 0 && !heroesObjects.isEmpty()) {
                 Scanner sc_hero = new Scanner(System.in);
                 System.out.println("Выберите героя (номер)");
                 Character hero_sign = sc_hero.nextLine().charAt(0);
@@ -120,12 +154,24 @@ public class Main {
             boolean hasAttacked;
             for (Character keyEnemy: enemiesObjects.keySet()) {
                 hasAttacked = false;
-                for (Character keyHero: heroesObjects.keySet()) {
-                    String heroName = heroesObjects.get(keyHero).name;
-                    if (enemiesObjects.get(keyEnemy).attack(heroesObjects.get(keyHero))) {
+                Set<Character> unionSet = new HashSet<>();
+                unionSet.addAll(heroesObjects.keySet());
+                unionSet.addAll(beastsObjects.keySet());
+                ArrayList<Character> keys = new ArrayList<>(unionSet);
+                while(!keys.isEmpty()) {
+                    Unit unit;
+                    int ind = (int) (Math.random() * keys.size());
+                    if (heroesObjects.containsKey(keys.get(ind)))
+                        unit = heroesObjects.get(keys.get(ind));
+                    else
+                        unit = beastsObjects.get(keys.get(ind));
+                    if (enemiesObjects.get(keyEnemy).attack(unit)) {
                         hasAttacked = true;
-                        System.out.println("Враг: " + enemiesObjects.get(keyEnemy).name + " атаковал: " + heroName);
+                        System.out.println("Враг: " + enemiesObjects.get(keyEnemy).name + " атаковал: " + unit.name);
                         break;
+                    }
+                    else {
+                        keys.remove(ind);
                     }
 
                 }
@@ -136,12 +182,24 @@ public class Main {
             }
             for (Character keyBeast: beastsObjects.keySet()) {
                 hasAttacked = false;
-                for (Character keyUnit: heroesObjects.keySet()) {
-                    String heroName = heroesObjects.get(keyUnit).name;
-                    if (beastsObjects.get(keyBeast).attack(heroesObjects.get(keyUnit))) {
+                Set<Character> unionSet = new HashSet<>();
+                unionSet.addAll(heroesObjects.keySet());
+                unionSet.addAll(enemiesObjects.keySet());
+                ArrayList<Character> keys = new ArrayList<>(unionSet);
+                while(!keys.isEmpty()) {
+                    Unit unit;
+                    int ind = (int) (Math.random() * keys.size());
+                    if (heroesObjects.containsKey(keys.get(ind)))
+                         unit = heroesObjects.get(keys.get(ind));
+                    else
+                         unit = enemiesObjects.get(keys.get(ind));
+                    if (beastsObjects.get(keyBeast).attack(unit)) {
                         hasAttacked = true;
-                        System.out.println("Зверь: " + beastsObjects.get(keyBeast).name + " атаковал: " + heroName);
+                        System.out.println("Зверь: " + beastsObjects.get(keyBeast).name + " атаковал: " + unit.name);
                         break;
+                    }
+                    else {
+                        keys.remove(ind);
                     }
 
                 }
@@ -155,11 +213,11 @@ public class Main {
 
         }
         if (field.getEnemyCount() + field.getBeastsCount() == 0)
-            System.out.println("Ура, ура, ура!!! Победа!!!");
+            System.out.println("Победа героев!");
         else if (field.getHeroesCount() + field.getEnemyCount() == 0)
-            System.out.println("Неожиданно... Природа победила!?");
-        else if (field.getHeroesCount() == 0)
-            System.out.println("Хнык... Хнык... Хнык... Поражение...");
+            System.out.println("Победа зверей!");
+        else if (field.getHeroesCount() + field.getBeastsCount() == 0)
+            System.out.println("Победа врагов!");
 
 
     }

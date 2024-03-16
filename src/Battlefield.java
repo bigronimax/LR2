@@ -5,7 +5,6 @@ import java.util.HashMap;
 public class Battlefield {
     private ArrayList<ArrayList<Character>> field = new ArrayList<>();
     private ArrayList<Character> signs = new ArrayList<>(Arrays.asList('*', '@', '#', '!'));
-
     private HashMap<Character, Hero> heroesMoves;
     private HashMap<Character, Hero> heroesAttacks;
     private HashMap<Character, Hero> heroesObjects = new HashMap<>();
@@ -638,7 +637,7 @@ public class Battlefield {
             xPos = (int) (Math.random() * size);
             while (repeats.contains(xPos))
                 xPos = (int) (Math.random() * size);
-            yPos = (int) (Math.random() * (size / 3)) + (size / 2);
+            yPos = size / 2;
             field.get(yPos).set((xPos), tmp);
             String name;
             if (dominator && k == 0)
