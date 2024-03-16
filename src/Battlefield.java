@@ -20,60 +20,8 @@ public class Battlefield {
     private boolean dominator = false;
     private Menu menu;
 
-    Battlefield(Menu menu, ArrayList<String> heroes) {
-        this.menu = menu;
-        makeHeroes(heroes);
-        heroesMoves = new HashMap<>(heroesObjects);
-        heroesAttacks = new HashMap<>(heroesObjects);
-        moves = heroesMoves.size();
-        attacks = heroesAttacks.size();
-        this.heroesCount = heroes.size();
-        fill();
-    }
 
-    Battlefield(int size, Menu menu, ArrayList<String> heroes) {
-        this.menu = menu;
-        this.size = size;
-        makeHeroes(heroes);
-        heroesMoves = new HashMap<>(heroesObjects);
-        heroesAttacks = new HashMap<>(heroesObjects);
-        moves = heroesMoves.size();
-        attacks = heroesAttacks.size();
-        this.heroesCount = heroes.size();
-        fill();
-
-    }
-
-    Battlefield(int size, Menu menu, ArrayList<String> heroes, int enemiesCount) {
-        this.menu = menu;
-        this.size = size;
-        this.enemiesCount = enemiesCount;
-        makeHeroes(heroes);
-        heroesMoves = new HashMap<>(heroesObjects);
-        heroesAttacks = new HashMap<>(heroesObjects);
-        moves = heroesMoves.size();
-        attacks = heroesAttacks.size();
-        this.heroesCount = heroes.size();
-        fill();
-
-    }
-
-    Battlefield(int size, Menu menu, ArrayList<String> heroes, int enemiesCount, boolean dominator) {
-        this.menu = menu;
-        this.size = size;
-        this.enemiesCount = enemiesCount;
-        this.dominator = dominator;
-        makeHeroes(heroes);
-        heroesMoves = new HashMap<>(heroesObjects);
-        heroesAttacks = new HashMap<>(heroesObjects);
-        moves = heroesMoves.size();
-        attacks = heroesAttacks.size();
-        this.heroesCount = heroes.size();
-        fill();
-
-    }
-
-    Battlefield(int size, Menu menu, ArrayList<String> heroes, int enemiesCount, int beastsCount, boolean dominator) {
+    Battlefield(int size, Menu menu, ArrayList<String> heroes, ArrayList<ArrayList<Character>> map, int enemiesCount, int beastsCount, boolean dominator) {
         this.menu = menu;
         this.size = size;
         this.enemiesCount = enemiesCount;
@@ -85,7 +33,7 @@ public class Battlefield {
         moves = heroesMoves.size();
         attacks = heroesAttacks.size();
         this.heroesCount = heroes.size();
-        fill();
+        fill(map);
 
     }
 
@@ -586,25 +534,32 @@ public class Battlefield {
 
     }
 
-    private void fill() {
+    private void fill(ArrayList<ArrayList<Character>> map) {
         ArrayList<Integer> repeats = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            ArrayList<Character> row = new ArrayList<>();
-            for (int j = 0; j < size; j++)
-                row.add(signs.get(0));
 
-            if (i != 0) {
-                for (int q = 0; q < size / 2; q++) {
-                    int index = (int) (Math.random() * size);
-                    while (repeats.contains(index))
-                        index = (int) (Math.random() * size);
-                    row.set((int) (Math.random() * size), signs.get((int) (Math.random() * 3) + 1));
-                    repeats.add(index);
+        if (map == null) {
+            for (int i = 0; i < size; i++) {
+                ArrayList<Character> row = new ArrayList<>();
+                for (int j = 0; j < size; j++)
+                    row.add(signs.get(0));
+
+                if (i != 0) {
+                    for (int q = 0; q < size / 2; q++) {
+                        int index = (int) (Math.random() * size);
+                        while (repeats.contains(index))
+                            index = (int) (Math.random() * size);
+                        row.set((int) (Math.random() * size), signs.get((int) (Math.random() * 3) + 1));
+                        repeats.add(index);
+                    }
                 }
+                field.add(row);
+                repeats.clear();
             }
-            field.add(row);
-            repeats.clear();
         }
+        else {
+            field = map;
+        }
+
         for (int k = 0; k < enemiesCount; k++) {
             int yPos, xPos;
             char tmp = (char) (97 + k);

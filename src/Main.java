@@ -1,7 +1,4 @@
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class Main {
@@ -9,37 +6,44 @@ public class Main {
         Menu menu = new Menu();
         String PATH = "C://Users/ronim/Downloads/maps/";
         ArrayList<String> heroes;
+        ArrayList<ArrayList<Character>> map = new ArrayList<>();
         int money = 50;
         int heroesCost = 0;
 
-        while(true) {
-            Scanner sc = new Scanner(System.in);
-            System.out.println("1. Начать игру\n2. Выбрать карту");
-            int input = sc.nextInt();
-            if (input == 1)
-                break;
-            else if (input == 2) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("1. Начать игру\n2. Загрузить карту");
+        int input = scanner.nextInt();
+        if (input == 2) {
+            while (true) {
                 System.out.println("Выберите карту (полное имя файла):");
                 File dir = new File(PATH);
-                if(dir.isDirectory())
-                {
-                    for(File item : dir.listFiles()){
+                if (dir.isDirectory()) {
+                    for (File item : dir.listFiles()) {
                         System.out.println(item.getName());
                     }
                 }
-                String mapName = sc.nextLine();
-                System.out.println(PATH + mapName);
-                File map = new File(PATH + mapName);
+                scanner = new Scanner(System.in);
+                String mapName = scanner.nextLine();
+                File mapFile = new File(PATH + mapName);
 
-                try(FileReader reader = new FileReader(map))
-                {
-                    int c;
-                    while((c=reader.read())!=-1){
-                        System.out.print((char)c);
+                try {
+
+                    Scanner scanFile = new Scanner(mapFile);
+
+                    int indRow = 0;
+                    while (scanFile.hasNextLine()) {
+                        String s = scanFile.nextLine();
+                        map.add(new ArrayList<>());
+                        for (int i = 0; i < s.length(); i++) {
+                            map.get(indRow).add(s.charAt(i));
+                        }
+                        indRow++;
                     }
-                }
-                catch(IOException ex){
-                    System.out.println(ex.getMessage());
+                    scanFile.close();
+                    break;
+
+                } catch (FileNotFoundException e) {
+                    System.out.println("Введите правильное имя файла!");
                 }
             }
         }
@@ -79,7 +83,7 @@ public class Main {
             break;
         }
 
-        Battlefield field = new Battlefield(10, menu, heroes, 1, 5, true);
+        Battlefield field = new Battlefield(10, menu, heroes, null, 1, 5, true);
         HashMap<Character, Enemy> enemiesObjects = field.getEnemiesObjects();
         HashMap<Character, Hero> heroesObjects = field.getHeroesObjects();
         HashMap<Character, Beast> beastsObjects = field.getBeastsObjects();
