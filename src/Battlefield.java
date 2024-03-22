@@ -5,6 +5,7 @@ import java.util.HashMap;
 public class Battlefield {
     private ArrayList<ArrayList<Character>> field = new ArrayList<>();
     private ArrayList<Character> signs = new ArrayList<>(Arrays.asList('*', '@', '#', '!'));
+    private HashMap<String, HashMap<Character, Double>> signsHash = new HashMap<>();
     private HashMap<Character, Hero> heroesMoves;
     private HashMap<Character, Hero> heroesAttacks;
     private HashMap<Character, Hero> heroesObjects = new HashMap<>();
@@ -21,7 +22,7 @@ public class Battlefield {
     private Menu menu;
 
 
-    Battlefield(int size, Menu menu, ArrayList<String> heroes, ArrayList<ArrayList<Character>> map, int enemiesCount, int beastsCount, boolean dominator) {
+    Battlefield(int size, Menu menu, ArrayList<String> heroes, ArrayList<ArrayList<Character>> map, HashMap<Character, Double> newSigns, int enemiesCount, int beastsCount, boolean dominator) {
         this.menu = menu;
         this.size = size;
         this.enemiesCount = enemiesCount;
@@ -33,6 +34,9 @@ public class Battlefield {
         moves = heroesMoves.size();
         attacks = heroesAttacks.size();
         this.heroesCount = heroes.size();
+        makeSigns(newSigns);
+//        System.out.println(signs);
+//        System.out.println(signsHash);
         fill(map);
 
     }
@@ -44,6 +48,16 @@ public class Battlefield {
             char tmp = (char) (48 + ind);
             heroesObjects.put(tmp, hero);
             ind++;
+        }
+    }
+
+    private void makeSigns(HashMap<Character, Double> newSigns) {
+        signsHash = menu.getDefaultSignsHash();
+        for (Character s: newSigns.keySet()) {
+            signs.add(s);
+            for (String type: menu.getDefaultSignsHash().keySet()) {
+                signsHash.get(type).put(s, newSigns.get(s));
+            }
         }
     }
     @Override
@@ -242,12 +256,8 @@ public class Battlefield {
             for (int i = Math.min(x, hero.xPos); i <= Math.max(x, hero.xPos); i++) {
                 if (i == hero.xPos)
                     continue;
-                else if (field.get(y).get(i) == '@')
-                    minDis += hero.heapPenalty;
-                else if (field.get(y).get(i) == '#')
-                    minDis += hero.swampPenalty;
-                else if (field.get(y).get(i) == '!')
-                    minDis += hero.treePenalty;
+                else if (signsHash.get(hero.type).containsKey(field.get(y).get(i)))
+                    minDis += signsHash.get(hero.type).get(field.get(y).get(i));
                 else if (field.get(y).get(i) >= 97 && field.get(y).get(i) <= 122) {
                     System.out.println("Враг преградил дорогу");
                     return false;
@@ -269,12 +279,8 @@ public class Battlefield {
             for (int i = Math.min(y, hero.yPos); i <= Math.max(y, hero.yPos); i++) {
                 if (i == hero.yPos)
                     continue;
-                else if (field.get(i).get(x) == '@')
-                    minDis += hero.heapPenalty;
-                else if (field.get(i).get(x) == '#')
-                    minDis += hero.swampPenalty;
-                else if (field.get(i).get(x) == '!')
-                    minDis += hero.treePenalty;
+                else if (signsHash.get(hero.type).containsKey(field.get(y).get(i)))
+                    minDis += signsHash.get(hero.type).get(field.get(y).get(i));
                 else if (field.get(i).get(x) >= 97 && field.get(i).get(x) <= 122) {
                     System.out.println("Враг преградил дорогу");
                     return false;
@@ -299,12 +305,8 @@ public class Battlefield {
                 for (int j = Math.min(x, hero.xPos); j <= Math.max(x, hero.xPos); j++) {
                     if (i == hero.yPos && j == hero.xPos)
                         row.add(0.0);
-                    else if (field.get(i).get(j) == '@')
-                        row.add(hero.heapPenalty);
-                    else if (field.get(i).get(j) == '#')
-                        row.add(hero.swampPenalty);
-                    else if (field.get(i).get(j) == '!')
-                        row.add(hero.treePenalty);
+                    else if (signsHash.get(hero.type).containsKey(field.get(y).get(i)))
+                        row.add(signsHash.get(hero.type).get(field.get(y).get(i)));
                     else if ((field.get(i).get(j) >= 97 && field.get(i).get(j) <= 122) || (field.get(i).get(j) >= 49 && field.get(j).get(j) <= 57) || (field.get(y).get(i) >= 65 && field.get(y).get(i) <= 90))
                         row.add(1000.0);
                     else
@@ -456,12 +458,8 @@ public class Battlefield {
                         return;
                     }
                 }
-                else if (field.get(i).get(enemy.xPos) == '@')
-                    distance += enemy.heapPenalty;
-                else if (field.get(i).get(enemy.xPos) == '#')
-                    distance += enemy.swampPenalty;
-                else if (field.get(i).get(enemy.xPos) == '!')
-                    distance += enemy.treePenalty;
+                else if (signsHash.get(enemy.type).containsKey(field.get(i).get(enemy.xPos)))
+                    distance += signsHash.get(enemy.type).get(field.get(i).get(enemy.xPos));
                 else if ((field.get(i).get(enemy.xPos) >= 97 && field.get(i).get(enemy.xPos) <= 122) || (field.get(i).get(enemy.xPos) >= 49 && field.get(i).get(enemy.xPos) <= 57) || (field.get(i).get(enemy.xPos) >= 65 && field.get(i).get(enemy.xPos) <= 90)) {
                     changePos(enemy.xPos, bestYPos, enemy);
                     return;
@@ -482,7 +480,7 @@ public class Battlefield {
                 else
                     break;
             }
-            else if (field.get(i).get(beast.xPos) == '@' || field.get(i).get(beast.xPos) == '#' || field.get(i).get(beast.xPos) == '!')
+            else if (signsHash.get(beast.type).containsKey(field.get(i).get(beast.xPos)))
                 distance++;
             else if (field.get(i).get(beast.xPos) >= 97 && field.get(i).get(beast.xPos) <= 122 || field.get(i).get(beast.xPos) >= 49 && field.get(i).get(beast.xPos) <= 57 || field.get(i).get(beast.xPos) >= 65 && field.get(i).get(beast.xPos) <= 90)
                 break;
@@ -496,7 +494,7 @@ public class Battlefield {
                 else
                     break;
             }
-            else if (field.get(i).get(beast.xPos) == '@' || field.get(i).get(beast.xPos) == '#' || field.get(i).get(beast.xPos) == '!')
+            else if (signsHash.get(beast.type).containsKey(field.get(i).get(beast.xPos)))
                 distance++;
             else if (field.get(i).get(beast.xPos) >= 97 && field.get(i).get(beast.xPos) <= 122 || field.get(i).get(beast.xPos) >= 49 && field.get(i).get(beast.xPos) <= 57 || field.get(i).get(beast.xPos) >= 65 && field.get(i).get(beast.xPos) <= 90)
                 break;
@@ -510,7 +508,7 @@ public class Battlefield {
                 else
                     break;
             }
-            else if (field.get(beast.yPos).get(i) == '@' || field.get(beast.yPos).get(i) == '#' || field.get(beast.yPos).get(i) == '!')
+            else if (signsHash.get(beast.type).containsKey(field.get(i).get(beast.xPos)))
                 distance++;
             else if (field.get(beast.yPos).get(i) >= 97 && field.get(beast.yPos).get(i) <= 122 || field.get(beast.yPos).get(i) >= 49 && field.get(beast.yPos).get(i) <= 57 || field.get(beast.yPos).get(i) >= 65 && field.get(beast.yPos).get(i) <= 90)
                 break;
@@ -524,7 +522,7 @@ public class Battlefield {
                 else
                     break;
             }
-            else if (field.get(beast.yPos).get(i) == '@' || field.get(beast.yPos).get(i) == '#' || field.get(beast.yPos).get(i) == '!')
+            else if (signsHash.get(beast.type).containsKey(field.get(i).get(beast.xPos)))
                 distance++;
             else if (field.get(beast.yPos).get(i) >= 97 && field.get(beast.yPos).get(i) <= 122 || field.get(beast.yPos).get(i) >= 49 && field.get(beast.yPos).get(i) <= 57 || field.get(beast.yPos).get(i) >= 65 && field.get(beast.yPos).get(i) <= 90)
                 break;

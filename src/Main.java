@@ -7,6 +7,9 @@ public class Main {
         String PATH = "C://Users/ronim/Downloads/maps/";
         ArrayList<String> heroes;
         ArrayList<ArrayList<Character>> map = new ArrayList<>();
+        HashMap<Character, Double> newSignsHash = new HashMap<>();
+        Battlefield field;
+        boolean mapChoice = false;
         int money = 50;
         int heroesCost = 0;
 
@@ -14,6 +17,7 @@ public class Main {
         System.out.println("1. Начать игру\n2. Загрузить карту");
         int input = scanner.nextInt();
         if (input == 2) {
+            mapChoice = true;
             while (true) {
                 System.out.println("Выберите карту (полное имя файла):");
                 File dir = new File(PATH);
@@ -31,13 +35,23 @@ public class Main {
                     Scanner scanFile = new Scanner(mapFile);
 
                     int indRow = 0;
-                    while (scanFile.hasNextLine()) {
+                    int size = scanFile.nextInt();
+                    scanFile.nextLine();
+                    for (int i = 0; i < size; i++) {
                         String s = scanFile.nextLine();
                         map.add(new ArrayList<>());
-                        for (int i = 0; i < s.length(); i++) {
-                            map.get(indRow).add(s.charAt(i));
+                        for (int j = 0; j < s.length(); j++) {
+                            map.get(indRow).add(s.charAt(j));
                         }
                         indRow++;
+                    }
+                    while(scanFile.hasNextLine())
+                    {
+                        String data = scanFile.nextLine();
+                        Character sign = data.charAt(0);
+                        Double ratio = Double.parseDouble(data.substring(2));
+                        newSignsHash.put(sign, ratio);
+
                     }
                     scanFile.close();
                     break;
@@ -82,8 +96,10 @@ public class Main {
 
             break;
         }
-
-        Battlefield field = new Battlefield(10, menu, heroes, null, 1, 5, true);
+        if (mapChoice)
+            field = new Battlefield(map.size(), menu, heroes, map, newSignsHash, 1, 5, true);
+        else
+            field = new Battlefield(10, menu, heroes, null, newSignsHash, 1, 5, true);
         HashMap<Character, Enemy> enemiesObjects = field.getEnemiesObjects();
         HashMap<Character, Hero> heroesObjects = field.getHeroesObjects();
         HashMap<Character, Beast> beastsObjects = field.getBeastsObjects();

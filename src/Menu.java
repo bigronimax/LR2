@@ -5,13 +5,17 @@ import java.util.HashMap;
 public class Menu {
 
     private HashMap<String, HashMap<String, Integer>> menu = new HashMap<>();
+
+    private ArrayList<String> types = new ArrayList<>(Arrays.asList("melee", "archers", "riders"));
+    private HashMap<String, String> typesHash = new HashMap<>();
+    private HashMap<String, HashMap<Character, Double>> defaultSignsHash = new HashMap<>();
     private ArrayList<String> names = new ArrayList<>(Arrays.asList("Swordsman", "Spearman", "Axeman", "Longbow", "Short bow", "Crossbow", "Knight", "Cuirassier", "Horse archer"));
     private ArrayList<String> beasts = new ArrayList<>(Arrays.asList("Eagle", "Bear", "Tiger", "Elephant", "Wolf"));
 
     Menu() {
         fill();
     }
-    private void add(String name, int hp, int damage, int attackRange, int armor, int movement, int cost) {
+    private void addUnit(String name, int hp, int damage, int attackRange, int armor, int movement, int cost) {
         HashMap<String, Integer> hero = new HashMap<>();
         hero.put("hp", hp);
         hero.put("damage", damage);
@@ -22,22 +26,67 @@ public class Menu {
         menu.put(name, hero);
     }
 
+    private void addSign(String type, Character s, double penalty) {
+        if (!defaultSignsHash.containsKey(type)) {
+            HashMap<Character, Double> sign = new HashMap<>();
+            sign.put(s, penalty);
+            defaultSignsHash.put(type, sign);
+        }
+        else {
+            defaultSignsHash.get(type).put(s, penalty);
+        }
+
+    }
+
     private void fill() {
-        add(names.get(0), 50, 5, 1, 8, 3, 10);
-        add(names.get(1), 35, 3, 1, 4, 6, 15);
-        add(names.get(2), 45, 9, 1, 3, 4, 20);
-        add(names.get(3), 30, 6, 5, 8, 2, 15);
-        add(names.get(4), 25, 3, 3, 4, 4, 19);
-        add(names.get(5), 40, 7, 6, 3, 2, 23);
-        add(names.get(6), 30, 5, 1, 3, 6, 20);
-        add(names.get(7), 50, 2, 1, 7, 5, 23);
-        add(names.get(8), 25, 3, 3, 2, 5, 25);
-        add(beasts.get(0), 25, 3, 3, 2, 5, 0);
-        add(beasts.get(1), 40, 7, 1, 8, 3, 0);
-        add(beasts.get(2), 30, 5, 3, 3, 6, 0);
-        add(beasts.get(3), 50, 2, 2, 8, 2, 0);
-        add(beasts.get(4), 25, 5, 2, 2, 5, 0);
-        add("Dominator", 100, 100, 100, 0, 100, 0);
+        addUnit(names.get(0), 50, 5, 1, 8, 3, 10);
+        addUnit(names.get(1), 35, 3, 1, 4, 6, 15);
+        addUnit(names.get(2), 45, 9, 1, 3, 4, 20);
+        addUnit(names.get(3), 30, 6, 5, 8, 2, 15);
+        addUnit(names.get(4), 25, 3, 3, 4, 4, 19);
+        addUnit(names.get(5), 40, 7, 6, 3, 2, 23);
+        addUnit(names.get(6), 30, 5, 1, 3, 6, 20);
+        addUnit(names.get(7), 50, 2, 1, 7, 5, 23);
+        addUnit(names.get(8), 25, 3, 3, 2, 5, 25);
+
+        addUnit(beasts.get(0), 25, 3, 3, 2, 5, 0);
+        addUnit(beasts.get(1), 40, 7, 1, 8, 3, 0);
+        addUnit(beasts.get(2), 30, 5, 3, 3, 6, 0);
+        addUnit(beasts.get(3), 50, 2, 2, 8, 2, 0);
+        addUnit(beasts.get(4), 25, 5, 2, 2, 5, 0);
+
+        addUnit("Dominator", 100, 100, 100, 0, 100, 0);
+
+        typesHash.put(names.get(0), types.get(0));
+        typesHash.put(names.get(1), types.get(0));
+        typesHash.put(names.get(2), types.get(0));
+        typesHash.put(names.get(3), types.get(1));
+        typesHash.put(names.get(4), types.get(1));
+        typesHash.put(names.get(5), types.get(1));
+        typesHash.put(names.get(6), types.get(2));
+        typesHash.put(names.get(7), types.get(2));
+        typesHash.put(names.get(8), types.get(2));
+
+        typesHash.put(beasts.get(0), types.get(1));
+        typesHash.put(beasts.get(1), types.get(0));
+        typesHash.put(beasts.get(2), types.get(0));
+        typesHash.put(beasts.get(3), types.get(2));
+        typesHash.put(beasts.get(4), types.get(0));
+
+        typesHash.put("Dominator", types.get(2));
+
+        addSign(types.get(0), '#', 1.5);
+        addSign(types.get(0), '@', 2);
+        addSign(types.get(0), '!', 1.2);
+        addSign(types.get(1), '#', 1.8);
+        addSign(types.get(1), '@', 2.2);
+        addSign(types.get(1), '!', 1);
+        addSign(types.get(2), '#', 2.2);
+        addSign(types.get(2), '@', 1.2);
+        addSign(types.get(2), '!', 1.5);
+
+
+
     }
 
     @Override
@@ -59,6 +108,6 @@ public class Menu {
     public HashMap<String, HashMap<String, Integer>> getMenu() {return menu;}
     public ArrayList<String> getBeasts() {return beasts;}
     public ArrayList<String> getNames() {return names;}
-
-
+    public HashMap<String, String> getTypesHash() {return typesHash;}
+    public HashMap<String, HashMap<Character, Double>> getDefaultSignsHash() {return defaultSignsHash;}
 }
