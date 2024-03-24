@@ -5,15 +5,38 @@ import java.util.HashMap;
 public class Menu {
 
     private HashMap<String, HashMap<String, Integer>> menu = new HashMap<>();
-
+    private int money = 50;
     private ArrayList<String> types = new ArrayList<>(Arrays.asList("melee", "archers", "riders"));
     private HashMap<String, String> typesHash = new HashMap<>();
     private HashMap<String, HashMap<Character, Double>> defaultSignsHash = new HashMap<>();
-    private ArrayList<String> names = new ArrayList<>(Arrays.asList("Swordsman", "Spearman", "Axeman", "Longbow", "Short bow", "Crossbow", "Knight", "Cuirassier", "Horse archer"));
+    private ArrayList<String> obtainableHeroes = new ArrayList<>();
+    private ArrayList<String> names = new ArrayList<>(Arrays.asList("Swordsman", "Spearman", "Axeman", "Longbow", "Short_bow", "Crossbow", "Knight", "Cuirassier", "Horse_archer"));
     private ArrayList<String> beasts = new ArrayList<>(Arrays.asList("Eagle", "Bear", "Tiger", "Elephant", "Wolf"));
 
     Menu() {
         fill();
+    }
+
+    @Override
+    public String toString() {
+        String output = "";
+        obtainableHeroes.clear();
+        checkObtainableHeroes();
+        if (!obtainableHeroes.isEmpty()) {
+            for (String name : obtainableHeroes) {
+                String properties = "|" + "name: " + name +
+                        "|" + "hp: " + menu.get(name).get("hp") +
+                        "|" + "damage: " + menu.get(name).get("damage") +
+                        "|" + "attackRange: " + menu.get(name).get("attackRange") +
+                        "|" + "armor: " + menu.get(name).get("armor") +
+                        "|" + "movement: " + menu.get(name).get("movement") +
+                        "|" + "cost: " + menu.get(name).get("cost") + "|" + "\n";
+                output += properties;
+            }
+        }
+        else
+            output += "Пока у вас недостаточно денег для найма героев, продолжайте сражаться!";
+        return output;
     }
     private void addUnit(String name, int hp, int damage, int attackRange, int armor, int movement, int cost) {
         HashMap<String, Integer> hero = new HashMap<>();
@@ -89,20 +112,12 @@ public class Menu {
 
     }
 
-    @Override
-    public String toString() {
-        String output = "";
-        for (String name : names) {
-            String properties = "|" + "name: " + name +
-                    "|" + "hp: " + menu.get(name).get("hp") +
-                    "|" + "damage: " + menu.get(name).get("damage") +
-                    "|" + "attackRange: " + menu.get(name).get("attackRange") +
-                    "|" + "armor: " + menu.get(name).get("armor") +
-                    "|" + "movement: " + menu.get(name).get("movement") +
-                    "|" + "cost: " + menu.get(name).get("cost") + "|" + "\n";
-            output += properties;
+    private void checkObtainableHeroes() {
+        for (String hero: names) {
+            if (money >= menu.get(hero).get("cost")) {
+                obtainableHeroes.add(hero);
+            }
         }
-        return output;
     }
 
     public HashMap<String, HashMap<String, Integer>> getMenu() {return menu;}
@@ -110,4 +125,8 @@ public class Menu {
     public ArrayList<String> getNames() {return names;}
     public HashMap<String, String> getTypesHash() {return typesHash;}
     public HashMap<String, HashMap<Character, Double>> getDefaultSignsHash() {return defaultSignsHash;}
+    public int getMoney() {return money;}
+    public ArrayList<String> getObtainableHeroes() {return obtainableHeroes;}
+
+    public void setMoney(int money) {this.money = money;}
 }

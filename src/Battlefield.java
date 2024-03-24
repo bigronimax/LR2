@@ -20,10 +20,12 @@ public class Battlefield {
     private int heroesCount;
     private boolean dominator = false;
     private Menu menu;
+    private Town town;
 
 
-    Battlefield(int size, Menu menu, ArrayList<String> heroes, ArrayList<ArrayList<Character>> map, HashMap<Character, Double> newSigns, int enemiesCount, int beastsCount, boolean dominator) {
+    Battlefield(int size, Menu menu, Town town, ArrayList<Hero> heroes, ArrayList<ArrayList<Character>> map, HashMap<Character, Double> newSigns, int enemiesCount, int beastsCount, boolean dominator) {
         this.menu = menu;
+        this.town = town;
         this.size = size;
         this.enemiesCount = enemiesCount;
         this.beastsCount = beastsCount;
@@ -34,6 +36,7 @@ public class Battlefield {
         moves = heroesMoves.size();
         attacks = heroesAttacks.size();
         this.heroesCount = heroes.size();
+        setHeroes();
         makeSigns(newSigns);
 //        System.out.println(signs);
 //        System.out.println(signsHash);
@@ -41,10 +44,9 @@ public class Battlefield {
 
     }
 
-    private void makeHeroes(ArrayList<String> heroes) {
+    private void makeHeroes(ArrayList<Hero> heroes) {
         int ind = 1;
-        for (String s : heroes) {
-            Hero hero = new Hero(s, menu, this);
+        for (Hero hero : heroes) {
             char tmp = (char) (48 + ind);
             heroesObjects.put(tmp, hero);
             ind++;
@@ -128,6 +130,7 @@ public class Battlefield {
 
     public void unitDeath(Unit unit) {
         char sign = field.get(unit.yPos).get(unit.xPos);
+        System.out.println(sign);
         field.get(unit.yPos).set(unit.xPos, '*');
         if (unit instanceof Hero) {
             heroesObjects.remove(sign);
@@ -136,10 +139,14 @@ public class Battlefield {
         else if (unit instanceof Enemy) {
             enemiesObjects.remove(sign);
             enemiesCount = enemiesObjects.size();
+            town.setRock(town.getRock() + (int) ((Math.random() * 10) + 10));
+            town.setWood(town.getWood() + (int) ((Math.random() * 10) + 10));
         }
         else if (unit instanceof Beast) {
             beastsObjects.remove(sign);
             beastsCount = beastsObjects.size();
+            town.setRock(town.getRock() + (int) ((Math.random() * 5) + 10));
+            town.setWood(town.getWood() + (int) ((Math.random() * 5) + 10));
         }
     }
     public boolean changePos(int x, int y, Unit unit) {
@@ -564,22 +571,17 @@ public class Battlefield {
             xPos = (int) (Math.random() * size);
             while (repeats.contains(xPos))
                 xPos = (int) (Math.random() * size);
-            if (size % 2 == 1) {
-                yPos = (int) (Math.random() * (size / 2 + 1)) + (size / 2);
-                field.get(yPos).set((xPos), tmp);
-            }
-            else {
-                yPos = (int) (Math.random() * (size / 2)) + (size / 2);
-                field.get(yPos).set((xPos), tmp);
-            }
+
+            field.get(size-1).set((xPos), tmp);
+
             String name;
             if (dominator && k == 0)
                 name = "Dominator";
             else
                 name = menu.getNames().get((int) (Math.random() * menu.getNames().size()));
-            enemiesObjects.put(tmp, new Enemy(name, menu, this));
+            enemiesObjects.put(tmp, new Enemy(name, menu));
             enemiesObjects.get(tmp).xPos = xPos;
-            enemiesObjects.get(tmp).yPos = yPos;
+            enemiesObjects.get(tmp).yPos = size-1;
             repeats.add(xPos);
         }
         repeats.clear();

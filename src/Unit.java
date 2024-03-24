@@ -15,12 +15,9 @@ public abstract class Unit {
     protected HashMap<Character, Double> obstacles = new HashMap<>();
     protected Menu menu;
 
-    protected Battlefield field;
-
-    Unit(String name, Menu menu, Battlefield field) {
+    Unit(String name, Menu menu) {
         this.menu = menu;
         this.name = name;
-        this.field = field;
         create();
     }
 
@@ -34,7 +31,7 @@ public abstract class Unit {
         type = menu.getTypesHash().get(name);
     }
 
-    protected boolean attack(Unit target) {
+    protected boolean attack(Unit target, Battlefield field) {
         if (field.canAttack(this, target)) {
             int hit = damage;
             if (target.armor >= damage) {
@@ -44,14 +41,14 @@ public abstract class Unit {
                 target.armor = 0;
                 target.hp -= hit;
                 if (target.hp <= 0)
-                    target.death();
+                    target.death(field);
             }
             return true;
         }
         return false;
     }
 
-    protected void death() {
+    protected void death(Battlefield field) {
         field.unitDeath(this);
     }
 

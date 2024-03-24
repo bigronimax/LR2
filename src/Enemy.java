@@ -1,11 +1,11 @@
 public class Enemy extends Unit {
 
-    Enemy(String name, Menu menu, Battlefield field) {
-        super(name, menu, field);
+    Enemy(String name, Menu menu) {
+        super(name, menu);
     }
 
 
-    protected void move() {
+    protected void move(Battlefield field) {
         field.enemyMove(this);
     }
 
