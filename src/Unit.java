@@ -9,6 +9,7 @@ public abstract class Unit {
     protected int attackRange;
     protected int armor;
     protected int movement;
+    protected double obstaclesRatio = 1;
     protected int xPos;
     protected int yPos;
     protected String type;

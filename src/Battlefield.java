@@ -130,7 +130,6 @@ public class Battlefield {
 
     public void unitDeath(Unit unit) {
         char sign = field.get(unit.yPos).get(unit.xPos);
-        System.out.println(sign);
         field.get(unit.yPos).set(unit.xPos, '*');
         if (unit instanceof Hero) {
             heroesObjects.remove(sign);
@@ -264,7 +263,7 @@ public class Battlefield {
                 if (i == hero.xPos)
                     continue;
                 else if (signsHash.get(hero.type).containsKey(field.get(y).get(i)))
-                    minDis += signsHash.get(hero.type).get(field.get(y).get(i));
+                    minDis += signsHash.get(hero.type).get(field.get(y).get(i)) * hero.obstaclesRatio;
                 else if (field.get(y).get(i) >= 97 && field.get(y).get(i) <= 122) {
                     System.out.println("Враг преградил дорогу");
                     return false;
@@ -287,7 +286,7 @@ public class Battlefield {
                 if (i == hero.yPos)
                     continue;
                 else if (signsHash.get(hero.type).containsKey(field.get(y).get(i)))
-                    minDis += signsHash.get(hero.type).get(field.get(y).get(i));
+                    minDis += signsHash.get(hero.type).get(field.get(y).get(i)) * hero.obstaclesRatio;
                 else if (field.get(i).get(x) >= 97 && field.get(i).get(x) <= 122) {
                     System.out.println("Враг преградил дорогу");
                     return false;
@@ -313,7 +312,7 @@ public class Battlefield {
                     if (i == hero.yPos && j == hero.xPos)
                         row.add(0.0);
                     else if (signsHash.get(hero.type).containsKey(field.get(y).get(i)))
-                        row.add(signsHash.get(hero.type).get(field.get(y).get(i)));
+                        row.add(signsHash.get(hero.type).get(field.get(y).get(i)) * hero.obstaclesRatio) ;
                     else if ((field.get(i).get(j) >= 97 && field.get(i).get(j) <= 122) || (field.get(i).get(j) >= 49 && field.get(j).get(j) <= 57) || (field.get(y).get(i) >= 65 && field.get(y).get(i) <= 90))
                         row.add(1000.0);
                     else
@@ -466,7 +465,7 @@ public class Battlefield {
                     }
                 }
                 else if (signsHash.get(enemy.type).containsKey(field.get(i).get(enemy.xPos)))
-                    distance += signsHash.get(enemy.type).get(field.get(i).get(enemy.xPos));
+                    distance += signsHash.get(enemy.type).get(field.get(i).get(enemy.xPos)) * enemy.obstaclesRatio;
                 else if ((field.get(i).get(enemy.xPos) >= 97 && field.get(i).get(enemy.xPos) <= 122) || (field.get(i).get(enemy.xPos) >= 49 && field.get(i).get(enemy.xPos) <= 57) || (field.get(i).get(enemy.xPos) >= 65 && field.get(i).get(enemy.xPos) <= 90)) {
                     changePos(enemy.xPos, bestYPos, enemy);
                     return;

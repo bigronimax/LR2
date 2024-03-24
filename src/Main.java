@@ -16,6 +16,14 @@ public class Main {
     static HashMap<Character, Double> newSignsHash = new HashMap<>();
     static Battlefield field;
     static boolean mapChoice = false;
+    static boolean hasMarket = false;
+    static Market market;
+    static String marketString = "";
+    static boolean hasAcademy = false;
+    static Academy academy;
+    static String academyString = "";
+    static WorkShop workShop;
+    static ArrayList<WorkShop> workShopsArray = new ArrayList<>();
 
     public static void main(String[] args) {
         System.out.println("1. Начать игру\n2. Загрузить карту\n3. Выйти");
@@ -25,71 +33,193 @@ public class Main {
             loadMap();
         else if (input == 3)
             System.exit(0);
-        heroesChoice();
-        battle();
 
         while(true) {
-            while (true) {
-                scanner = new Scanner(System.in);
-                System.out.println(town);
-                int buildingsWoodCost = 0;
-                int buildingsRockCost = 0;
-                if (!town.obtainableBuildings.isEmpty()) {
-                    System.out.println("Выберите здания для покупки или улучшения (через запятую или пробел): ");
-                    String buildingsString = scanner.nextLine();
-                    if (buildingsString.contains(",")) {
-                        buildingsNames = new ArrayList<>(Arrays.asList(buildingsString.split(", ")));
-                    } else {
-                        buildingsNames = new ArrayList<>(Arrays.asList(buildingsString.split(" ")));
-                    }
 
-                    for (String name: buildingsNames) {
-                        if (!town.getBuildingsNames().contains(name)) {
-                            System.out.println("Вы обидели владельца здания, поэтому его не удалось купить/улучшить");
-                            buildingsNames.remove(name);
-                        }
-                    }
-                    if (buildingsNames.isEmpty()) {
-                        System.out.println("Не хотите, как хотите...");
-                        break;
-                    }
-                    for (String name : buildingsNames) {
-                        buildingsWoodCost += town.getBuildingsPrices().get(name).get("wood");
-                        buildingsRockCost += town.getBuildingsPrices().get(name).get("rock");
-                    }
-                    if (buildingsWoodCost > town.getWood() || buildingsRockCost > town.getRock()) {
-                        System.out.println("Вы чересчур расточительны. Убедитесь, что вы тратитесь на имеющиеся ресурсы без кредитов");
-                        continue;
-                    }
-                    town.setWood(town.getWood() - buildingsWoodCost);
-                    town.setRock(town.getRock() - buildingsRockCost);
 
-                    for (String name: buildingsNames) {
-
-                        if (buildingsUp.containsKey(name))
-                            buildingsUp.get(name).levelUp();
-                        else if (town.buildingsUp.containsKey(name)) {
-                            Building b = new Building(town, name, heroes);
-                            buildingsUp.put(name, b);
-                        }
-                    }
-                    System.out.println(buildingsUp);
-                    buildingsNames.clear();
-
-                }
-                else {
-                    break;
-                }
+            if (hasAcademy) {
+                academyString = "5. Создать юнита\n";
             }
-            System.out.println("1. Сражаться\n2. Нанять героев\n3. Выйти");
+            if (hasMarket) {
+                marketString = "6. Рынок";
+            }
+
+            System.out.println("1. Сражаться\n2. Нанять героев\n3. Здания\n4. Выйти\n" + academyString + marketString);
             scanner = new Scanner(System.in);
             input = scanner.nextInt();
-            if (input == 1)
+            if (input == 1) {
                 battle();
+                if (hasMarket)
+                    market.course();
+                if (!workShopsArray.isEmpty()) {
+                    for (WorkShop w : workShopsArray) {
+                        w.upgrade();
+                    }
+                }
+            }
             else if (input == 2)
                 heroesChoice();
             else if (input == 3)
+                buildings();
+            else if (input == 4)
                 System.exit(0);
+            else if (input == 5 && hasAcademy) {
+                System.out.println("Введите основные характеристики вашего героя: ");
+                System.out.println("Имя: ");
+                scanner = new Scanner(System.in);
+                String name = scanner.nextLine();
+                System.out.println("Здоровье: ");
+                scanner = new Scanner(System.in);
+                int hp = scanner.nextInt();
+                System.out.println("Урон: ");
+                scanner = new Scanner(System.in);
+                int damage = scanner.nextInt();
+                System.out.println("Дальность атаки: ");
+                scanner = new Scanner(System.in);
+                int attackRange = scanner.nextInt();
+                System.out.println("Броня: ");
+                scanner = new Scanner(System.in);
+                int armor = scanner.nextInt();
+                System.out.println("Передвижение: ");
+                scanner = new Scanner(System.in);
+                int movement = scanner.nextInt();
+                if (academy.createHero(name, hp, damage, attackRange, armor, movement))
+                    System.out.println("Ваш герой создан!");
+                else
+                    System.out.println("Недостаточно денег для создания...");
+            }
+            else if (input == 6 && hasMarket) {
+                System.out.println(market);
+                System.out.println("Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
+                scanner = new Scanner(System.in);
+                input = scanner.nextInt();
+                System.out.println("Введите количество ресурса для обмена: ");
+                scanner = new Scanner(System.in);
+                int amount = scanner.nextInt();
+                if (input == 1)
+                    market.exchangeWood(amount);
+                else if (input == 2)
+                    market.exchangeRock(amount);
+                System.out.println("Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
+            }
+        }
+    }
+
+    public static void buildings() {
+        while (true) {
+            scanner = new Scanner(System.in);
+
+            if (!buildingsUp.isEmpty()) {
+                System.out.println("Ваши здания: ");
+                for (String name : buildingsUp.keySet()) {
+                    System.out.println(buildingsUp.get(name));
+                }
+            }
+            if (!workShopsArray.isEmpty()) {
+                for (WorkShop w : workShopsArray) {
+                    System.out.println(w);
+                }
+            }
+            if (hasMarket) {
+                System.out.println("market");
+            }
+            if (hasAcademy) {
+                System.out.println("academy");
+            }
+
+            System.out.println(town);
+            int buildingsWoodCost = 0;
+            int buildingsRockCost = 0;
+            if (!town.obtainableBuildings.isEmpty()) {
+                System.out.println("Выберите здания для покупки или улучшения (через запятую или пробел): ");
+                String buildingsString = scanner.nextLine();
+                if (buildingsString.contains(","))
+                    buildingsNames = new ArrayList<>(Arrays.asList(buildingsString.split(", ")));
+                else if (buildingsString.isEmpty()) {
+                    System.out.println("Не хотите, как хотите...");
+                    break;
+                }
+                else
+                    buildingsNames = new ArrayList<>(Arrays.asList(buildingsString.split(" ")));
+
+                ArrayList<String> buildingsTmp = new ArrayList<>(buildingsNames);
+                for (String name: buildingsTmp) {
+                    if (!town.getObtainableBuildings().contains(name)) {
+                        System.out.println("Вы обидели владельца здания, поэтому его не удалось купить/улучшить");
+                        buildingsNames.remove(name);
+                    }
+                }
+
+                if (buildingsNames.isEmpty()) {
+                    System.out.println("Не хотите, как хотите...");
+                    break;
+                }
+
+                for (String name : buildingsNames) {
+                    buildingsWoodCost += town.getBuildingsPrices().get(name).get("wood");
+                    buildingsRockCost += town.getBuildingsPrices().get(name).get("rock");
+                }
+                if (buildingsWoodCost > town.getWood() || buildingsRockCost > town.getRock()) {
+                    System.out.println("Вы чересчур расточительны. Убедитесь, что вы тратитесь на имеющиеся ресурсы без кредитов");
+                    continue;
+                }
+                town.setWood(town.getWood() - buildingsWoodCost);
+                town.setRock(town.getRock() - buildingsRockCost);
+
+                for (String name: buildingsNames) {
+                    if (Objects.equals(name, "tavern")) {
+                        System.out.println("Вы выбрали таверну, хотите прокачать перемещение или снизить штрафы?");
+                        System.out.println("1. Перемещение\n2. Штрафы");
+                        scanner = new Scanner(System.in);
+                        int input = scanner.nextInt();
+                        if (input == 1) {
+                            buildingsNames.remove("tavern");
+                            buildingsNames.add("tavern_movement");
+                        }
+                        else if (input == 2) {
+                            buildingsNames.remove("tavern");
+                            buildingsNames.add("tavern_obstacles");
+                        }
+                    }
+                }
+
+                for (String name: buildingsNames) {
+
+                    if (buildingsUp.containsKey(name)) {
+                        buildingsUp.get(name).levelUp();
+                        if (buildingsUp.get(name).getLevel() == 4)
+                            town.getBuildingsPrices().remove(name);
+                    }
+                    else if (town.getBuildingsUp().contains(name)) {
+                        Building b = new Building(name, heroes);
+                        buildingsUp.put(name, b);
+                    }
+                    else if (Objects.equals(name, "market")) {
+                        market = new Market(town);
+                        hasMarket = true;
+                        town.getBuildingsPrices().remove("market");
+                    }
+                    else if (Objects.equals(name, "academy")) {
+                        academy = new Academy(menu);
+                        hasAcademy = true;
+                        town.getBuildingsPrices().remove("academy");
+                    }
+                    else if (Objects.equals(name, "workshop")) {
+                        if (workShopsArray.isEmpty() || workShopsArray.get(workShopsArray.size()-1).getLevel() == 4)
+                            if (workShopsArray.size() < 4)
+                                workShopsArray.add(new WorkShop(menu));
+                            else
+                                town.getBuildingsPrices().remove("workshop");
+                        else
+                            workShopsArray.get(workShopsArray.size()-1).levelUp();
+                    }
+                }
+                buildingsNames.clear();
+
+            }
+            else {
+                break;
+            }
         }
     }
 
@@ -232,6 +362,7 @@ public class Main {
         }
         if (field.getEnemyCount() + field.getBeastsCount() == 0) {
             System.out.println("Победа героев!");
+            menu.setMoney(menu.getMoney() + ((int) (Math.random() * 5) + 1));
         }
         else if (field.getHeroesCount() + field.getEnemyCount() == 0)
             System.out.println("Победа зверей!");
@@ -248,21 +379,24 @@ public class Main {
             if (!menu.getObtainableHeroes().isEmpty()) {
                 System.out.println("Казна предоставила вам " + menu.getMoney() + " крон. Выберите себе героев (через запятую или пробел): ");
                 String heroesString = sc.nextLine();
-                if (heroesString.contains(",")) {
+                if (heroesString.contains(","))
                     heroesNames = new ArrayList<>(Arrays.asList(heroesString.split(", ")));
-                } else {
-                    heroesNames = new ArrayList<>(Arrays.asList(heroesString.split(" ")));
+                else if (heroesString.isEmpty()) {
+                    System.out.println("Не хотите, как хотите...");
+                    break;
                 }
+                else
+                    heroesNames = new ArrayList<>(Arrays.asList(heroesString.split(" ")));
 
-                for (int i = heroesNames.size() - 1; i > -1; i--) {
-                    if (!menu.getMenu().containsKey(heroesNames.get(i))) {
+                ArrayList<String> heroesTmp = new ArrayList<>(heroesNames);
+                for (String name: heroesTmp) {
+                    if (!menu.getObtainableHeroes().contains(name)) {
                         System.out.println("Вы обидели одного из героев, он не вступает в вашу команду");
-                        heroesNames.remove(i);
-
+                        heroesNames.remove(name);
                     }
                 }
                 if (heroesNames.isEmpty()) {
-                    System.out.println("Вы не собрали команду, вы безнадежны");
+                    System.out.println("Не хотите, как хотите...");
                     break;
                 }
                 for (String hero : heroesNames) {
@@ -277,6 +411,9 @@ public class Main {
                 for (String name: heroesNames) {
                     Hero hero = new Hero(name, menu);
                     heroes.add(hero);
+                }
+                for (String name: buildingsUp.keySet()) {
+                    buildingsUp.get(name).setHeroes(heroes);
                 }
                 heroesNames.clear();
 

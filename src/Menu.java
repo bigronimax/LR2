@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Menu {
 
@@ -24,21 +25,23 @@ public class Menu {
         checkObtainableHeroes();
         if (!obtainableHeroes.isEmpty()) {
             for (String name : obtainableHeroes) {
-                String properties = "|" + "name: " + name +
-                        "|" + "hp: " + menu.get(name).get("hp") +
-                        "|" + "damage: " + menu.get(name).get("damage") +
-                        "|" + "attackRange: " + menu.get(name).get("attackRange") +
-                        "|" + "armor: " + menu.get(name).get("armor") +
-                        "|" + "movement: " + menu.get(name).get("movement") +
-                        "|" + "cost: " + menu.get(name).get("cost") + "|" + "\n";
-                output += properties;
+                if (!Objects.equals(name, "Dominator")) {
+                    String properties = "|" + "name: " + name +
+                            "|" + "hp: " + menu.get(name).get("hp") +
+                            "|" + "damage: " + menu.get(name).get("damage") +
+                            "|" + "attackRange: " + menu.get(name).get("attackRange") +
+                            "|" + "armor: " + menu.get(name).get("armor") +
+                            "|" + "movement: " + menu.get(name).get("movement") +
+                            "|" + "cost: " + menu.get(name).get("cost") + "|" + "\n";
+                    output += properties;
+                }
             }
         }
         else
             output += "Пока у вас недостаточно денег для найма героев, продолжайте сражаться!";
         return output;
     }
-    private void addUnit(String name, int hp, int damage, int attackRange, int armor, int movement, int cost) {
+    public void addUnit(String name, int hp, int damage, int attackRange, int armor, int movement, int cost) {
         HashMap<String, Integer> hero = new HashMap<>();
         hero.put("hp", hp);
         hero.put("damage", damage);
@@ -118,6 +121,7 @@ public class Menu {
                 obtainableHeroes.add(hero);
             }
         }
+        obtainableHeroes.add("Dominator");
     }
 
     public HashMap<String, HashMap<String, Integer>> getMenu() {return menu;}

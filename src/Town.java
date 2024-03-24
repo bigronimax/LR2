@@ -1,14 +1,15 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Town {
 
     private int wood = 0;
     private int rock = 0;
 
-    ArrayList<String> buildingsNames = new ArrayList<>(Arrays.asList("hospital", "forge", "tavern", "arsenal", "market", "academy", "workshop"));
-    HashMap<String, String> buildingsUp = new HashMap<>();
+    ArrayList<String> buildingsNames = new ArrayList<>(Arrays.asList("hospital", "forge", "tavern_movement", "tavern_obstacles", "arsenal", "market", "academy", "workshop"));
+    ArrayList<String> buildingsUp = new ArrayList<>();
     ArrayList<String> obtainableBuildings = new ArrayList<>();
     HashMap<String, HashMap<String, Integer>> buildingsPrices = new HashMap<>();
 
@@ -37,14 +38,20 @@ public class Town {
 
 
     private void fill() {
-        buildingsUp.put("hospital", "hp");
-        buildingsUp.put("forge", "damage");
-        buildingsUp.put("tavern", "movement");
-        buildingsUp.put("arsenal", "armor");
+        buildingsUp.add("hospital");
+        buildingsUp.add("forge");
+        buildingsUp.add("tavern_movement");
+        buildingsUp.add("tavern_obstacles");
+        buildingsUp.add("arsenal");
 
         for (String s: buildingsNames) {
             HashMap<String, Integer> prices = new HashMap<>();
-            buildingsPrices.put(s, prices);
+            if (Objects.equals(s, "tavern_movement") || Objects.equals(s, "tavern_obstacles")) {
+                if (!buildingsPrices.containsKey("tavern"))
+                    buildingsPrices.put("tavern", prices);
+            }
+            else
+                buildingsPrices.put(s, prices);
         }
 
         buildingsPrices.get("hospital").put("wood", 20);
@@ -59,8 +66,8 @@ public class Town {
         buildingsPrices.get("workshop").put("rock", 20);
         buildingsPrices.get("market").put("wood", 50);
         buildingsPrices.get("market").put("rock", 50);
-        buildingsPrices.get("academy").put("wood", 100);
-        buildingsPrices.get("academy").put("rock", 100);
+        buildingsPrices.get("academy").put("wood", 50);
+        buildingsPrices.get("academy").put("rock", 50);
     }
 
     private void checkObtainableBuildings() {
@@ -76,8 +83,7 @@ public class Town {
     public int getWood() {return wood;}
     public int getRock() {return rock;}
 
-    public HashMap<String, String> getBuildingsUp() {return buildingsUp;}
-    public ArrayList<String> getBuildingsNames() {return buildingsNames;}
-
+    public ArrayList<String> getBuildingsUp() {return buildingsUp;}
+    public ArrayList<String> getObtainableBuildings() {return obtainableBuildings;}
     public HashMap<String, HashMap<String, Integer>> getBuildingsPrices() {return buildingsPrices;}
 }
