@@ -1,5 +1,8 @@
-public class Market {
+import java.io.Serializable;
 
+public class Market implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     private int rock = 0;
     private int wood = 0;
     private Town town;

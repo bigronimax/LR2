@@ -1,5 +1,8 @@
-public class Academy {
+import java.io.Serializable;
 
+public class Academy implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     private Menu menu;
 
     Academy(Menu menu) {

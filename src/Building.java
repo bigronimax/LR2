@@ -1,8 +1,10 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-public class Building {
+public class Building implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private int level = 0;
     private String name;
     private ArrayList<Hero> heroes;

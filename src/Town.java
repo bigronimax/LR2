@@ -1,10 +1,12 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class Town {
+public class Town implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private int wood = 0;
     private int rock = 0;
 
@@ -77,13 +79,11 @@ public class Town {
             }
         }
     }
-
-    public void setWood(int wood) {this.wood = wood;}
-    public void setRock(int rock) {this.rock = rock;}
     public int getWood() {return wood;}
     public int getRock() {return rock;}
-
     public ArrayList<String> getBuildingsUp() {return buildingsUp;}
     public ArrayList<String> getObtainableBuildings() {return obtainableBuildings;}
     public HashMap<String, HashMap<String, Integer>> getBuildingsPrices() {return buildingsPrices;}
+    public void setWood(int wood) {this.wood = wood;}
+    public void setRock(int rock) {this.rock = rock;}
 }

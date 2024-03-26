@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-
+    static String SAVE_PATH = "C://Users/ronim/Downloads/save.txt";
     static Menu menu = new Menu();
     static Town town = new Town();
     static Scanner scanner;
@@ -16,31 +16,30 @@ public class Main {
     static HashMap<Character, Double> newSignsHash = new HashMap<>();
     static Battlefield field;
     static boolean mapChoice = false;
-    static boolean hasMarket = false;
     static Market market;
     static String marketString = "";
-    static boolean hasAcademy = false;
     static Academy academy;
     static String academyString = "";
-    static WorkShop workShop;
     static ArrayList<WorkShop> workShopsArray = new ArrayList<>();
 
-    public static void main(String[] args) {
-        System.out.println("1. Начать игру\n2. Загрузить карту\n3. Выйти");
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        System.out.println("1. Начать новую игру\n2. Загрузить игру\n3. Загрузить карту\n4. Выйти");
         scanner = new Scanner(System.in);
         int input = scanner.nextInt();
         if (input == 2)
-            loadMap();
+            load();
         else if (input == 3)
+            loadMap();
+        else if (input == 4)
             System.exit(0);
 
         while(true) {
 
 
-            if (hasAcademy) {
+            if (academy != null) {
                 academyString = "5. Создать юнита\n";
             }
-            if (hasMarket) {
+            if (market != null) {
                 marketString = "6. Рынок";
             }
 
@@ -49,7 +48,7 @@ public class Main {
             input = scanner.nextInt();
             if (input == 1) {
                 battle();
-                if (hasMarket)
+                if (market != null)
                     market.course();
                 if (!workShopsArray.isEmpty()) {
                     for (WorkShop w : workShopsArray) {
@@ -61,9 +60,11 @@ public class Main {
                 heroesChoice();
             else if (input == 3)
                 buildings();
-            else if (input == 4)
+            else if (input == 4) {
+                save();
                 System.exit(0);
-            else if (input == 5 && hasAcademy) {
+            }
+            else if (input == 5 && academy != null) {
                 System.out.println("Введите основные характеристики вашего героя: ");
                 System.out.println("Имя: ");
                 scanner = new Scanner(System.in);
@@ -88,7 +89,7 @@ public class Main {
                 else
                     System.out.println("Недостаточно денег для создания...");
             }
-            else if (input == 6 && hasMarket) {
+            else if (input == 6 && market != null) {
                 System.out.println(market);
                 System.out.println("Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
                 scanner = new Scanner(System.in);
@@ -103,6 +104,30 @@ public class Main {
                 System.out.println("Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
             }
         }
+    }
+
+    public static void save() throws IOException {
+        Saving savedGame = new Saving(academy, market, workShopsArray, buildingsUp, heroes, menu.getMenu(), menu.getNames(), menu.getMoney(), town.getWood(), town.getRock());
+        FileOutputStream outputStream = new FileOutputStream(SAVE_PATH);
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+        objectOutputStream.writeObject(savedGame);
+        objectOutputStream.close();
+    }
+
+    public static void load() throws IOException, ClassNotFoundException {
+        FileInputStream fileInputStream = new FileInputStream(SAVE_PATH);
+        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+        Saving savedGame = (Saving) objectInputStream.readObject();
+        academy = savedGame.getAcademy();
+        market = savedGame.getMarket();
+        workShopsArray = savedGame.getWorkShopsArray();
+        buildingsUp = savedGame.getBuildingsUp();
+        heroes = savedGame.getHeroes();
+        menu.setMenu(savedGame.getMenu());
+        menu.setNames(savedGame.getNames());
+        menu.setMoney(savedGame.getMoney());
+        town.setWood(savedGame.getWood());
+        town.setRock(savedGame.getRock());
     }
 
     public static void buildings() {
@@ -120,10 +145,10 @@ public class Main {
                     System.out.println(w);
                 }
             }
-            if (hasMarket) {
+            if (market != null) {
                 System.out.println("market");
             }
-            if (hasAcademy) {
+            if (academy != null) {
                 System.out.println("academy");
             }
 
@@ -196,12 +221,10 @@ public class Main {
                     }
                     else if (Objects.equals(name, "market")) {
                         market = new Market(town);
-                        hasMarket = true;
                         town.getBuildingsPrices().remove("market");
                     }
                     else if (Objects.equals(name, "academy")) {
                         academy = new Academy(menu);
-                        hasAcademy = true;
                         town.getBuildingsPrices().remove("academy");
                     }
                     else if (Objects.equals(name, "workshop")) {

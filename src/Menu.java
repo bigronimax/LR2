@@ -1,10 +1,12 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class Menu {
+public class Menu implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private HashMap<String, HashMap<String, Integer>> menu = new HashMap<>();
     private int money = 50;
     private ArrayList<String> types = new ArrayList<>(Arrays.asList("melee", "archers", "riders"));
@@ -131,6 +133,7 @@ public class Menu {
     public HashMap<String, HashMap<Character, Double>> getDefaultSignsHash() {return defaultSignsHash;}
     public int getMoney() {return money;}
     public ArrayList<String> getObtainableHeroes() {return obtainableHeroes;}
-
     public void setMoney(int money) {this.money = money;}
+    public void setMenu(HashMap<String, HashMap<String, Integer>> menu) {this.menu = menu;}
+    public void setNames(ArrayList<String> names) {this.names = names;}
 }

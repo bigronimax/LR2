@@ -1,8 +1,10 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public abstract class Unit {
+public abstract class Unit implements Serializable {
+    private static final long serialVersionUID = 1L;
     protected String name;
     protected int hp;
     protected int damage;

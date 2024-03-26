@@ -1,7 +1,9 @@
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class Hero extends Unit {
+public class Hero extends Unit implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     public boolean hasMoved = false;
     public boolean hasAttacked = false;
 
