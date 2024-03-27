@@ -28,27 +28,24 @@ public class Building implements Serializable {
     }
 
     private void upgrade(ArrayList<Hero> heroes) {
-        for (Hero hero: heroes) {
-            switch (name) {
-                case ("hospital"):
-                    //Stream.of(hero).map(x -> x.hp + 1).forEach(System.out::print);
-                    hero.hp++;
+        switch (name) {
+            case ("hospital"):
+                heroes.forEach(h -> h.setHp(h.getHp() + 1));
+                break;
+            case ("arsenal"):
+                heroes.forEach(h -> h.setArmor(h.getArmor() + 1));
                     break;
-                case ("arsenal"):
-                    hero.armor++;
-                    break;
-                case ("forge"):
-                    hero.damage++;
-                    break;
-                case ("tavern_movement"):
-                    hero.movement++;
-                    break;
-                case ("tavern_obstacles"):
-                    hero.obstaclesRatio -= 0.1;
-                    break;
-            }
-
+            case ("forge"):
+                heroes.forEach(h -> h.setDamage(h.getDamage() + 1));
+                break;
+            case ("tavern_movement"):
+                heroes.forEach(h -> h.setMovement(h.getMovement() + 1));
+                break;
+            case ("tavern_obstacles"):
+                heroes.forEach(h -> h.setObstaclesRatio(h.getObstaclesRatio() - 0.1));
+                break;
         }
+
     }
 
     public int getLevel() {return level;}

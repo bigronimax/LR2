@@ -54,7 +54,16 @@ public abstract class Unit implements Serializable {
     protected void death(Battlefield field) {
         field.unitDeath(this);
     }
-
+    public int getHp() {return hp;}
+    public int getArmor() {return armor;}
+    public int getDamage() {return damage;}
+    public int getMovement() {return movement;}
+    public double getObstaclesRatio() {return obstaclesRatio;}
+    public void setHp(int hp) {this.hp = hp;}
+    public void setArmor(int armor) {this.armor = armor;}
+    public void setDamage(int damage) {this.damage = damage;}
+    public void setMovement(int movement) {this.movement = movement;}
+    public void setObstaclesRatio(double obstaclesRatio) {this.obstaclesRatio = obstaclesRatio;}
 }
 
 
