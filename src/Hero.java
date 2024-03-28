@@ -18,12 +18,14 @@ public class Hero extends Unit implements Serializable {
         propsHash.put("armor", armor);
     }
 
-    protected void move(int x, int y, Battlefield field) {
+    protected boolean move(int x, int y, Battlefield field) {
         if (field.changePos(x - 1, y - 1, this) && !hasMoved) {
             hasMoved = true;
             xPos = x - 1;
             yPos = y - 1;
+            return true;
         }
+        return false;
     }
 
     @Override

@@ -2,11 +2,12 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
+    static String PATH = "C://Users/ronim/Downloads/maps/";
     static String SAVE_PATH = "C://Users/ronim/Downloads/save.txt";
+    static String LOG_PATH = "C://Users/ronim/Downloads/logs/";
     static Menu menu = new Menu();
     static Town town = new Town();
     static Scanner scanner;
-    static String PATH = "C://Users/ronim/Downloads/maps/";
     static ArrayList<String> heroesNames;
     static ArrayList<String> buildingsNames;
     static ArrayList<Hero> heroes = new ArrayList<>();
@@ -21,6 +22,7 @@ public class Main {
     static Academy academy;
     static String academyString = "";
     static ArrayList<WorkShop> workShopsArray = new ArrayList<>();
+    static int battlesAmount = 0;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         System.out.println("1. Начать новую игру\n2. Загрузить игру\n3. Загрузить карту\n4. Выйти");
@@ -32,6 +34,8 @@ public class Main {
             loadMap();
         else if (input == 4)
             System.exit(0);
+        for (File myFile : Objects.requireNonNull(new File(LOG_PATH).listFiles()))
+            if (myFile.isFile()) myFile.delete();
 
         while(true) {
 
@@ -246,7 +250,7 @@ public class Main {
         }
     }
 
-    public static void battle() {
+    public static void battle() throws IOException {
 
         if (mapChoice)
             field = new Battlefield(map.size(), menu, town, heroes, map, newSignsHash, 1, 1, false);
@@ -255,9 +259,17 @@ public class Main {
         heroesObjects = field.getHeroesObjects();
         HashMap<Character, Enemy> enemiesObjects = field.getEnemiesObjects();
         HashMap<Character, Beast> beastsObjects = field.getBeastsObjects();
+
+        int movesAmount = 1;
+        String log = "";
+        String logInfo = "";
+        battlesAmount++;
+        String logName = battlesAmount + ".txt";
         System.out.println(field);
+        File file = new File(LOG_PATH + logName);
 
         while (field.getHeroesCount() + field.getEnemyCount() != 0 && field.getBeastsCount() + field.getHeroesCount() != 0 && field.getBeastsCount() + field.getEnemyCount() != 0) {
+            log += movesAmount + " ход:\n";
             while (field.getMoves() + field.getAttacks() != 0 && field.getEnemyCount() + field.getBeastsCount() != 0 && !heroesObjects.isEmpty()) {
                 Scanner sc_hero = new Scanner(System.in);
                 System.out.println("Выберите героя (номер)");
@@ -279,7 +291,11 @@ public class Main {
                         }
                         int xPos = Integer.parseInt(crd.get(0));
                         int yPos = Integer.parseInt(crd.get(1));
-                        hero.move(xPos, yPos, field);
+                        if (hero.move(xPos, yPos, field)) {
+                            logInfo = "Герой: " + hero.name + " переместился на клетку: " + xPos + " " + yPos;
+                            System.out.println(logInfo);
+                            log += logInfo + "\n";
+                        }
                     }
                 }
                 else if (action.equals("none")) {
@@ -290,10 +306,19 @@ public class Main {
                     Scanner target = new Scanner(System.in);
                     char target_sign = target.nextLine().charAt(0);
                     String targetName;
+                    int targetHp;
                     if (target_sign >= 65 && target_sign <= 90) {
                         targetName = beastsObjects.get(target_sign).name;
+                        targetHp = beastsObjects.get(target_sign).hp;
                         if (hero.attack(beastsObjects.get(target_sign), field)) {
-                            System.out.println("Герой: " + hero.name + " атаковал " + targetName);
+                            logInfo = "Герой: " + hero.name + " атаковал " + targetName;
+                            System.out.println(logInfo);
+                            log += logInfo + "\n";
+                            if (targetHp - hero.damage <= 0) {
+                                logInfo = targetName + " помер...";
+                                System.out.println(logInfo);
+                                log += logInfo + "\n";
+                            }
                         }
                         else {
                             System.out.println("Фигово атакуешь");
@@ -301,8 +326,16 @@ public class Main {
                     }
                     else if (target_sign >= 97 && target_sign <= 122) {
                         targetName = enemiesObjects.get(target_sign).name;
+                        targetHp = enemiesObjects.get(target_sign).hp;
                         if (hero.attack(enemiesObjects.get(target_sign), field)) {
-                            System.out.println("Герой: " + hero.name + " атаковал " + targetName);
+                            logInfo = "Герой: " + hero.name + " атаковал " + targetName;
+                            System.out.println(logInfo);
+                            log += logInfo + "\n";
+                            if (targetHp - hero.damage <= 0) {
+                                logInfo = targetName + " помер...";
+                                System.out.println(logInfo);
+                                log += logInfo + "\n";
+                            }
                         }
                         else {
                             System.out.println("Фигово атакуешь");
@@ -336,9 +369,17 @@ public class Main {
                         unit = heroesObjects.get(keys.get(ind));
                     else
                         unit = beastsObjects.get(keys.get(ind));
+                    int unitHp = unit.hp;
                     if (enemiesObjects.get(keyEnemy).attack(unit, field)) {
                         hasAttacked = true;
-                        System.out.println("Враг: " + enemiesObjects.get(keyEnemy).name + " атаковал: " + unit.name);
+                        logInfo = "Враг: " + enemiesObjects.get(keyEnemy).name + " атаковал: " + unit.name;
+                        System.out.println(logInfo);
+                        log += logInfo + "\n";
+                        if (unitHp - enemiesObjects.get(keyEnemy).damage <= 0) {
+                            logInfo = unit.name + " помер...";
+                            System.out.println(logInfo);
+                            log += logInfo + "\n";
+                        }
                         break;
                     }
                     else {
@@ -349,6 +390,11 @@ public class Main {
 
                 if (!hasAttacked) {
                     enemiesObjects.get(keyEnemy).move(field);
+                    int xPos = enemiesObjects.get(keyEnemy).xPos + 1;
+                    int yPos = enemiesObjects.get(keyEnemy).yPos + 1;
+                    logInfo = "Враг: " + enemiesObjects.get(keyEnemy).name + " переместился на клетку: " + xPos + " " + yPos;
+                    System.out.println(logInfo);
+                    log += logInfo + "\n";
                 }
             }
             for (Character keyBeast: beastsObjects.keySet()) {
@@ -364,9 +410,17 @@ public class Main {
                         unit = heroesObjects.get(keys.get(ind));
                     else
                         unit = enemiesObjects.get(keys.get(ind));
+                    int unitHp = unit.hp;
                     if (beastsObjects.get(keyBeast).attack(unit, field)) {
                         hasAttacked = true;
-                        System.out.println("Зверь: " + beastsObjects.get(keyBeast).name + " атаковал: " + unit.name);
+                        logInfo = "Зверь: " + beastsObjects.get(keyBeast).name + " атаковал: " + unit.name;
+                        System.out.println(logInfo);
+                        log += logInfo + "\n";
+                        if (unitHp - beastsObjects.get(keyBeast).damage <= 0) {
+                            logInfo = unit.name + " помер...";
+                            System.out.println(logInfo);
+                            log += logInfo + "\n";
+                        }
                         break;
                     }
                     else {
@@ -377,20 +431,41 @@ public class Main {
 
                 if (!hasAttacked) {
                     beastsObjects.get(keyBeast).move(field);
+                    int xPos = beastsObjects.get(keyBeast).xPos + 1;
+                    int yPos = beastsObjects.get(keyBeast).yPos + 1;
+                    logInfo = "Зверь: " + beastsObjects.get(keyBeast).name + " переместился на клетку: " + xPos + " " + yPos;
+                    System.out.println(logInfo);
+                    log += logInfo + "\n";
                 }
             }
             field.setHeroes();
+            movesAmount++;
             System.out.println(field);
 
         }
         if (field.getEnemyCount() + field.getBeastsCount() == 0) {
-            System.out.println("Победа героев!");
+            logInfo = "Победа героев!";
+            System.out.println(logInfo);
+            log += logInfo;
             menu.setMoney(menu.getMoney() + ((int) (Math.random() * 5) + 1));
         }
-        else if (field.getHeroesCount() + field.getEnemyCount() == 0)
-            System.out.println("Победа зверей!");
-        else if (field.getHeroesCount() + field.getBeastsCount() == 0)
-            System.out.println("Победа врагов!");
+        else if (field.getHeroesCount() + field.getEnemyCount() == 0) {
+            logInfo = "Победа зверей!";
+            System.out.println(logInfo);
+            log += logInfo;
+        }
+        else if (field.getHeroesCount() + field.getBeastsCount() == 0) {
+            logInfo = "Победа врагов!";
+            System.out.println(logInfo);
+            log += logInfo;
+        }
+        FileWriter writer = new FileWriter(file, false);
+        try(writer) {
+            writer.append(log);
+        }
+        catch(IOException ex){
+            System.out.println(ex.getMessage());
+        }
 
     }
 
