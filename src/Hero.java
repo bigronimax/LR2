@@ -1,21 +1,23 @@
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Hero extends Unit implements Serializable {
 
     private static final long serialVersionUID = 1L;
     public boolean hasMoved = false;
     public boolean hasAttacked = false;
-
-    protected HashMap<String, Integer> propsHash = new HashMap<>();
-
+    private int buff = 0;
+    private int movesBuff = 0;
 
     Hero(String name, Menu menu) {
         super(name, menu);
-        propsHash.put("hp", hp);
-        propsHash.put("damage", damage);
-        propsHash.put("movement", movement);
-        propsHash.put("armor", armor);
+    }
+    Hero(String name, Menu menu, int buff, int movesBuff) {
+        super(name, menu);
+
+        this.buff = buff;
+        this.movesBuff = movesBuff;
     }
 
     protected boolean move(int x, int y, Battlefield field) {
@@ -47,8 +49,39 @@ public class Hero extends Unit implements Serializable {
         return false;
     }
 
+    protected boolean buff(Unit target, Battlefield field) {
+        if (Objects.equals(this.type, "wizards")) {
+            if (field.canAttack(this, target) && !hasAttacked) {
+                target.movement += buff;
+                target.damage += buff;
+                target.armor += buff;
+                hasAttacked = true;
+                field.getBuffsHash().put((Hero) target, movesBuff);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean debuff(Unit target, Battlefield field) {
+        if (Objects.equals(this.type, "wizards")) {
+            if (field.canAttack(this, target) && !hasAttacked) {
+                target.movement -= buff;
+                target.damage -= buff;
+                target.armor -= buff;
+                hasAttacked = true;
+                field.getDebuffsHash().put((Hero) target, movesBuff);
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected void none(Battlefield field) {
         field.heroNone(this);
     }
 
+    public int getBuff() {return buff;}
+
+    public int getMovesBuff() {return movesBuff;}
 }

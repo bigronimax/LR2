@@ -16,7 +16,9 @@ public abstract class Unit implements Serializable {
     protected int yPos;
     protected String type;
     protected HashMap<Character, Double> obstacles = new HashMap<>();
+
     protected Menu menu;
+    private HashMap<String, Integer> defaultProps = new HashMap<>();
 
     Unit(String name, Menu menu) {
         this.menu = menu;
@@ -32,6 +34,12 @@ public abstract class Unit implements Serializable {
         armor = heroHash.get("armor");
         movement = heroHash.get("movement");
         type = menu.getTypesHash().get(name);
+
+        defaultProps.put("hp", hp);
+        defaultProps.put("damage", damage);
+        defaultProps.put("attackRange", attackRange);
+        defaultProps.put("armor", armor);
+        defaultProps.put("movement", movement);
     }
 
     protected boolean attack(Unit target, Battlefield field) {
@@ -54,11 +62,21 @@ public abstract class Unit implements Serializable {
     protected void death(Battlefield field) {
         field.unitDeath(this);
     }
+
+    protected void setDefaultProps() {
+        hp = defaultProps.get("hp");
+        damage = defaultProps.get("damage");
+        attackRange = defaultProps.get("attackRange");
+        armor = defaultProps.get("armor");
+        movement = defaultProps.get("movement");
+    }
+
     public int getHp() {return hp;}
     public int getArmor() {return armor;}
     public int getDamage() {return damage;}
     public int getMovement() {return movement;}
     public double getObstaclesRatio() {return obstaclesRatio;}
+    public String getType() {return type;}
     public void setHp(int hp) {this.hp = hp;}
     public void setArmor(int armor) {this.armor = armor;}
     public void setDamage(int damage) {this.damage = damage;}

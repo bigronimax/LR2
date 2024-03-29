@@ -8,6 +8,7 @@ public class Saving implements Serializable {
     private Academy academy;
     private Market market;
     private ArrayList<WorkShop> workShopsArray;
+    private MagicAcademy magicAcademy;
     private HashMap<String, Building> buildingsUp;
     private ArrayList<Hero> heroes;
     private HashMap<String, HashMap<String, Integer>> menu;
@@ -19,6 +20,7 @@ public class Saving implements Serializable {
     Saving(Academy academy,
            Market market,
            ArrayList<WorkShop> workShopsArray,
+           MagicAcademy magicAcademy,
            HashMap<String, Building> buildingsUp,
            ArrayList<Hero> heroes,
            HashMap<String, HashMap<String, Integer>> menu,
@@ -29,6 +31,7 @@ public class Saving implements Serializable {
         this.academy = academy;
         this.market = market;
         this.workShopsArray = workShopsArray;
+        this.magicAcademy = magicAcademy;
         this.buildingsUp = buildingsUp;
         this.heroes = heroes;
         this.menu = menu;
@@ -41,6 +44,7 @@ public class Saving implements Serializable {
     public Academy getAcademy() {return academy;}
     public Market getMarket() {return market;}
     public ArrayList<WorkShop> getWorkShopsArray() {return workShopsArray;}
+    public MagicAcademy getMagicAcademy() {return magicAcademy;}
     public HashMap<String, Building> getBuildingsUp() {return buildingsUp;}
     public ArrayList<Hero> getHeroes() {return heroes;}
     public HashMap<String, HashMap<String, Integer>> getMenu() {return menu;}

@@ -1,11 +1,14 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Battlefield {
     private ArrayList<ArrayList<Character>> field = new ArrayList<>();
     private ArrayList<Character> signs = new ArrayList<>(Arrays.asList('*', '@', '#', '!'));
     private HashMap<String, HashMap<Character, Double>> signsHash = new HashMap<>();
+    private HashMap<Hero, Integer> buffsHash = new HashMap<>();
+    private HashMap<Hero, Integer> debuffsHash = new HashMap<>();
     private HashMap<Character, Hero> heroesMoves;
     private HashMap<Character, Hero> heroesAttacks;
     private HashMap<Character, Hero> heroesObjects = new HashMap<>();
@@ -85,13 +88,28 @@ public class Battlefield {
         output += "Герои (атака): \n";
         for (Character key : heroesAttacks.keySet()) {
             Hero hero = heroesAttacks.get(key);
-            String heroAttacksString = key + ": " +"|" + "name: " + hero.name +
-                    "|" + "hp: " + hero.hp +
-                    "|" + "damage: " + hero.damage +
-                    "|" + "attackRange: " + hero.attackRange +
-                    "|" + "armor: " + hero.armor +
-                    "|" + "movement: " + hero.movement + "|" + "\n";
-            output += heroAttacksString;
+            if (!Objects.equals(hero.getType(), "wizards")) {
+                String heroAttacksString = key + ": " + "|" + "name: " + hero.name +
+                        "|" + "hp: " + hero.hp +
+                        "|" + "damage: " + hero.damage +
+                        "|" + "attackRange: " + hero.attackRange +
+                        "|" + "armor: " + hero.armor +
+                        "|" + "movement: " + hero.movement + "|" + "\n";
+                output += heroAttacksString;
+            }
+        }
+        output += "Герои (поддержка): \n";
+        for (Character key :heroesAttacks.keySet()) {
+            Hero hero = heroesAttacks.get(key);
+            if (Objects.equals(hero.getType(), "wizards")) {
+                String heroAttacksString = key + ": " + "|" + "name: " + hero.name +
+                        "|" + "hp: " + hero.hp +
+                        "|" + "buff: " + hero.getBuff() +
+                        "|" + "buffRange: " + hero.attackRange +
+                        "|" + "armor: " + hero.armor +
+                        "|" + "movement: " + hero.movement + "|" + "\n";
+                output += heroAttacksString;
+            }
         }
 
         output += "Враги: \n";
@@ -179,7 +197,8 @@ public class Battlefield {
                 || (heroesObjects.containsValue(target) && enemiesObjects.containsValue(attacker))
                 || (beastsObjects.containsValue(target) && heroesObjects.containsValue(attacker))
                 || (beastsObjects.containsValue(target) && enemiesObjects.containsValue(attacker))
-                || attacker instanceof Beast) {
+                || attacker instanceof Beast
+                || Objects.equals(attacker.getType(), "wizards") && heroesObjects.containsValue(target)) {
             int x = attacker.xPos;
             int y = attacker.yPos;
             int moves = 0;
@@ -636,4 +655,6 @@ public class Battlefield {
     public HashMap<Character, Enemy> getEnemiesObjects() {return enemiesObjects;}
     public HashMap<Character, Hero> getHeroesObjects() {return heroesObjects;}
     public HashMap<Character, Beast> getBeastsObjects() {return beastsObjects;}
+    public HashMap<Hero, Integer> getBuffsHash() {return buffsHash;}
+    public HashMap<Hero, Integer> getDebuffsHash() {return debuffsHash;}
 }

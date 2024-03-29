@@ -21,6 +21,8 @@ public class Main {
     static String marketString = "";
     static Academy academy;
     static String academyString = "";
+    static MagicAcademy magicAcademy;
+    static String magicAcademyString = "";
     static ArrayList<WorkShop> workShopsArray = new ArrayList<>();
     static int battlesAmount = 0;
 
@@ -44,10 +46,13 @@ public class Main {
                 academyString = "5. Создать юнита\n";
             }
             if (market != null) {
-                marketString = "6. Рынок";
+                marketString = "6. Рынок\n";
+            }
+            if (magicAcademy != null) {
+                magicAcademyString = "7. Академия магов";
             }
 
-            System.out.println("1. Сражаться\n2. Нанять героев\n3. Здания\n4. Выйти\n" + academyString + marketString);
+            System.out.println("1. Сражаться\n2. Нанять героев\n3. Здания\n4. Выйти\n" + academyString + marketString + magicAcademyString);
             scanner = new Scanner(System.in);
             input = scanner.nextInt();
             if (input == 1) {
@@ -107,11 +112,46 @@ public class Main {
                     market.exchangeRock(amount);
                 System.out.println("Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
             }
+            else if (input == 7 && magicAcademy != null) {
+                if (menu.getMoney() >= menu.getMenu().get("Wizard").get("cost")) {
+                    String name;
+                    System.out.println("Отправьте одного из своих героев на обучение магии: ");
+                    for (Hero hero: heroes) {
+                        System.out.println(hero.name);
+                    }
+                    scanner = new Scanner(System.in);
+                    name = scanner.nextLine();
+                    if (!magicAcademy.createWizard(name))
+                        System.out.println("Ваш отряд не понял, кому идти в академию. Никто не пошел.");
+
+                }
+                else {
+                    System.out.println("Вы слишком бедны, чтобы пользоваться услугами академии. Необходимо минимум 20 крон");
+                }
+
+            }
+        }
+    }
+
+    public static void checkBuffs() {
+        for (Hero hero: field.getBuffsHash().keySet()) {
+            field.getBuffsHash().replace(hero, field.getBuffsHash().get(hero) - 1);
+            if (field.getBuffsHash().get(hero) == 0) {
+                field.getBuffsHash().remove(hero);
+                hero.setDefaultProps();
+            }
+        }
+        for (Hero hero: field.getDebuffsHash().keySet()) {
+            field.getDebuffsHash().replace(hero, field.getDebuffsHash().get(hero) - 1);
+            if (field.getDebuffsHash().get(hero) == 0) {
+                field.getDebuffsHash().remove(hero);
+                hero.setDefaultProps();
+            }
         }
     }
 
     public static void save() throws IOException {
-        Saving savedGame = new Saving(academy, market, workShopsArray, buildingsUp, heroes, menu.getMenu(), menu.getNames(), menu.getMoney(), town.getWood(), town.getRock());
+        Saving savedGame = new Saving(academy, market, workShopsArray, magicAcademy, buildingsUp, heroes, menu.getMenu(), menu.getNames(), menu.getMoney(), town.getWood(), town.getRock());
         FileOutputStream outputStream = new FileOutputStream(SAVE_PATH);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
         objectOutputStream.writeObject(savedGame);
@@ -125,6 +165,7 @@ public class Main {
         academy = savedGame.getAcademy();
         market = savedGame.getMarket();
         workShopsArray = savedGame.getWorkShopsArray();
+        magicAcademy = savedGame.getMagicAcademy();
         buildingsUp = savedGame.getBuildingsUp();
         heroes = savedGame.getHeroes();
         menu.setMenu(savedGame.getMenu());
@@ -155,6 +196,8 @@ public class Main {
             if (academy != null) {
                 System.out.println("academy");
             }
+            if (magicAcademy != null)
+                System.out.println(magicAcademy);
 
             System.out.println(town);
             int buildingsWoodCost = 0;
@@ -240,6 +283,15 @@ public class Main {
                         else
                             workShopsArray.get(workShopsArray.size()-1).levelUp();
                     }
+                    else if (Objects.equals(name, "magicAcademy")) {
+                        if (magicAcademy != null) {
+                            magicAcademy.levelUp();
+                            if (magicAcademy.getLevel() == 4)
+                                town.getBuildingsPrices().remove("magicAcademy");
+                        }
+                        else
+                            magicAcademy = new MagicAcademy(menu, heroes);
+                    }
                 }
                 buildingsNames.clear();
 
@@ -275,7 +327,10 @@ public class Main {
                 System.out.println("Выберите героя (номер)");
                 Character hero_sign = sc_hero.nextLine().charAt(0);
                 Hero hero = heroesObjects.get(hero_sign);
-                System.out.println("move, attack, none?");
+                if (!Objects.equals(hero.type, "wizards"))
+                    System.out.println("move, attack, none?");
+                else
+                    System.out.println("move, buff, none?");
                 Scanner sc_action = new Scanner(System.in);
                 String action = sc_action.nextLine();
                 if (action.equals("move") && !hero.hasMoved) {
@@ -301,13 +356,17 @@ public class Main {
                 else if (action.equals("none")) {
                     hero.none(field);
                 }
-                else if (action.equals("attack") && !hero.hasAttacked) {
-                    System.out.println("Введите букву врага: ");
+                else if (!Objects.equals(hero.type, "wizards") && action.equals("attack") && !hero.hasAttacked
+                        || Objects.equals(hero.type, "wizards") && action.equals("buff") && !hero.hasAttacked) {
+                    if (!Objects.equals(hero.type, "wizards"))
+                        System.out.println("Введите букву врага: ");
+                    else
+                        System.out.println("Введите цифру союзника: ");
                     Scanner target = new Scanner(System.in);
                     char target_sign = target.nextLine().charAt(0);
                     String targetName;
                     int targetHp;
-                    if (target_sign >= 65 && target_sign <= 90) {
+                    if (target_sign >= 65 && target_sign <= 90 && (!Objects.equals(hero.type, "wizards"))) {
                         targetName = beastsObjects.get(target_sign).name;
                         targetHp = beastsObjects.get(target_sign).hp;
                         if (hero.attack(beastsObjects.get(target_sign), field)) {
@@ -324,7 +383,7 @@ public class Main {
                             System.out.println("Фигово атакуешь");
                         }
                     }
-                    else if (target_sign >= 97 && target_sign <= 122) {
+                    else if (target_sign >= 97 && target_sign <= 122 && (!Objects.equals(hero.type, "wizards"))) {
                         targetName = enemiesObjects.get(target_sign).name;
                         targetHp = enemiesObjects.get(target_sign).hp;
                         if (hero.attack(enemiesObjects.get(target_sign), field)) {
@@ -341,8 +400,47 @@ public class Main {
                             System.out.println("Фигово атакуешь");
                         }
                     }
+                    else if (target_sign >= 1 && target_sign <= 9 && (Objects.equals(hero.type, "wizards"))) {
+                        targetName = heroesObjects.get(target_sign).name;
+                        if (Objects.equals(hero.name, "Wizard")) {
+                            if (hero.buff(heroesObjects.get(target_sign), field)) {
+                                logInfo = "Герой: " + hero.name + " оказал поддержку " + targetName;
+                                System.out.println(logInfo);
+                                log += logInfo + "\n";
+                            }
+                            else {
+                                System.out.println("Посох короткий...");
+                            }
+                        }
+                        else if (Objects.equals(hero.name, "Necromancer")) {
+                            int random = (int) (Math.random() * 100) + 1;
+                            if (random < 50) {
+                                if (hero.debuff(heroesObjects.get(target_sign), field)) {
+                                    logInfo = "Герой: " + hero.name + " наложил проклятие " + targetName + ". Получить поддержку: >=50/100. Выпало: " + random;
+                                    System.out.println(logInfo);
+                                    log += logInfo + "\n";
+                                }
+                                else {
+                                    System.out.println("Посох короткий...");
+                                }
+                            }
+                            else {
+                                if (hero.buff(heroesObjects.get(target_sign), field)) {
+                                    logInfo = "Герой: " + hero.name + " оказал поддержку " + targetName + ". Получить поддержку: >=50/100. Выпало: " + random;
+                                    System.out.println(logInfo);
+                                    log += logInfo + "\n";
+                                }
+                                else {
+                                    System.out.println("Посох короткий...");
+                                }
+                            }
+                        }
+                    }
                     else {
-                        System.out.println("Бьешь не тех");
+                        System.out.println("Нельзя");
+                        System.out.println(target_sign >= 1);
+                        System.out.println(target_sign <= 9);
+                        System.out.println((Objects.equals(hero.type, "wizards")));
                     }
 
                 }
@@ -440,6 +538,7 @@ public class Main {
             }
             field.setHeroes();
             movesAmount++;
+            checkBuffs();
             System.out.println(field);
 
         }

@@ -9,7 +9,7 @@ public class Menu implements Serializable {
     private static final long serialVersionUID = 1L;
     private HashMap<String, HashMap<String, Integer>> menu = new HashMap<>();
     private int money = 50;
-    private ArrayList<String> types = new ArrayList<>(Arrays.asList("melee", "archers", "riders"));
+    private ArrayList<String> types = new ArrayList<>(Arrays.asList("melee", "archers", "riders", "wizards"));
     private HashMap<String, String> typesHash = new HashMap<>();
     private HashMap<String, HashMap<Character, Double>> defaultSignsHash = new HashMap<>();
     private ArrayList<String> obtainableHeroes = new ArrayList<>();
@@ -85,6 +85,9 @@ public class Menu implements Serializable {
 
         addUnit("Dominator", 100, 100, 100, 0, 100, 0);
 
+        addUnit("Necromancer", 5, 0, 8, 0, 4, 20);
+        addUnit("Wizard", 10, 0, 10, 0, 5, 20);
+
         typesHash.put(names.get(0), types.get(0));
         typesHash.put(names.get(1), types.get(0));
         typesHash.put(names.get(2), types.get(0));
@@ -102,6 +105,8 @@ public class Menu implements Serializable {
         typesHash.put(beasts.get(4), types.get(0));
 
         typesHash.put("Dominator", types.get(2));
+        typesHash.put("Wizard", types.get(3));
+        typesHash.put("Necromancer", types.get(3));
 
         addSign(types.get(0), '#', 1.5);
         addSign(types.get(0), '@', 2);
@@ -112,6 +117,9 @@ public class Menu implements Serializable {
         addSign(types.get(2), '#', 2.2);
         addSign(types.get(2), '@', 1.2);
         addSign(types.get(2), '!', 1.5);
+        addSign(types.get(3), '#', 2);
+        addSign(types.get(3), '@', 1.3);
+        addSign(types.get(3), '!', 1.3);
 
 
 

@@ -10,7 +10,7 @@ public class Town implements Serializable {
     private int wood = 0;
     private int rock = 0;
 
-    ArrayList<String> buildingsNames = new ArrayList<>(Arrays.asList("hospital", "forge", "tavern_movement", "tavern_obstacles", "arsenal", "market", "academy", "workshop"));
+    ArrayList<String> buildingsNames = new ArrayList<>(Arrays.asList("hospital", "forge", "tavern_movement", "tavern_obstacles", "arsenal", "market", "academy", "workshop", "magicAcademy"));
     ArrayList<String> buildingsUp = new ArrayList<>();
     ArrayList<String> obtainableBuildings = new ArrayList<>();
     HashMap<String, HashMap<String, Integer>> buildingsPrices = new HashMap<>();
@@ -70,6 +70,8 @@ public class Town implements Serializable {
         buildingsPrices.get("market").put("rock", 50);
         buildingsPrices.get("academy").put("wood", 50);
         buildingsPrices.get("academy").put("rock", 50);
+        buildingsPrices.get("magicAcademy").put("wood", 20);
+        buildingsPrices.get("magicAcademy").put("rock", 20);
     }
 
     private void checkObtainableBuildings() {
