@@ -76,13 +76,24 @@ public class Battlefield {
         output += "Герои (передвижение): \n";
         for (Character key : heroesMoves.keySet()) {
             Hero hero = heroesMoves.get(key);
-            String heroMovesString = key + ": " +"|" + "name: " + hero.name +
-                    "|" + "hp: " + hero.hp +
-                    "|" + "damage: " + hero.damage +
-                    "|" + "attackRange: " + hero.attackRange +
-                    "|" + "armor: " + hero.armor +
-                    "|" + "movement: " + hero.movement + "|" + "\n";
-            output += heroMovesString;
+            if (Objects.equals(hero.getType(), "wizards")) {
+                String heroMovesString = key + ": " + "|" + "name: " + hero.name +
+                        "|" + "hp: " + hero.hp +
+                        "|" + "buff: " + hero.getBuff() +
+                        "|" + "buffRange: " + hero.attackRange +
+                        "|" + "armor: " + hero.armor +
+                        "|" + "movement: " + hero.movement + "|" + "\n";
+                output += heroMovesString;
+            }
+            else {
+                String heroMovesString = key + ": " + "|" + "name: " + hero.name +
+                        "|" + "hp: " + hero.hp +
+                        "|" + "damage: " + hero.damage +
+                        "|" + "attackRange: " + hero.attackRange +
+                        "|" + "armor: " + hero.armor +
+                        "|" + "movement: " + hero.movement + "|" + "\n";
+                output += heroMovesString;
+            }
         }
 
         output += "Герои (атака): \n";

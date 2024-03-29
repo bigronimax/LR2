@@ -400,7 +400,7 @@ public class Main {
                             System.out.println("Фигово атакуешь");
                         }
                     }
-                    else if (target_sign >= 1 && target_sign <= 9 && (Objects.equals(hero.type, "wizards"))) {
+                    else if (target_sign >= 49 && target_sign <= 57 && (Objects.equals(hero.type, "wizards"))) {
                         targetName = heroesObjects.get(target_sign).name;
                         if (Objects.equals(hero.name, "Wizard")) {
                             if (hero.buff(heroesObjects.get(target_sign), field)) {
@@ -438,9 +438,6 @@ public class Main {
                     }
                     else {
                         System.out.println("Нельзя");
-                        System.out.println(target_sign >= 1);
-                        System.out.println(target_sign <= 9);
-                        System.out.println((Objects.equals(hero.type, "wizards")));
                     }
 
                 }
@@ -542,6 +539,9 @@ public class Main {
             System.out.println(field);
 
         }
+        for (Hero hero: heroes) {
+            hero.setDefaultProps();
+        }
         if (field.getEnemyCount() + field.getBeastsCount() == 0) {
             logInfo = "Победа героев!";
             System.out.println(logInfo);
@@ -552,11 +552,13 @@ public class Main {
             logInfo = "Победа зверей!";
             System.out.println(logInfo);
             log += logInfo;
+            menu.setMoney(menu.getMoney() + ((int) (Math.random() * 5) + 1));
         }
         else if (field.getHeroesCount() + field.getBeastsCount() == 0) {
             logInfo = "Победа врагов!";
             System.out.println(logInfo);
             log += logInfo;
+            menu.setMoney(menu.getMoney() + ((int) (Math.random() * 5) + 1));
         }
         FileWriter writer = new FileWriter(file, false);
         try(writer) {
