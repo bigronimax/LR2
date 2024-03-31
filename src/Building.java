@@ -24,7 +24,6 @@ public class Building implements Serializable {
     public void levelUp() {
         level++;
         upgrade(heroes);
-
     }
 
     private void upgrade(ArrayList<Hero> heroes) {
@@ -46,6 +45,26 @@ public class Building implements Serializable {
                 break;
         }
 
+    }
+
+    public void upgradeHero(Hero hero) {
+        switch (name) {
+            case ("hospital"):
+                hero.hp++;
+                break;
+            case ("arsenal"):
+                hero.armor++;
+                break;
+            case ("forge"):
+                hero.damage++;
+                break;
+            case ("tavern_movement"):
+                hero.movement++;
+                break;
+            case ("tavern_obstacles"):
+                hero.obstaclesRatio -= 0.1;
+                break;
+        }
     }
 
     public int getLevel() {return level;}

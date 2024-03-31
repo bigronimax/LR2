@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.logging.*;
 
 public class Battlefield {
     private ArrayList<ArrayList<Character>> field = new ArrayList<>();
@@ -24,6 +25,7 @@ public class Battlefield {
     private boolean dominator = false;
     private Menu menu;
     private Town town;
+    private Logger LOGGER = Logger.getLogger(Main.class.getName());;
 
 
     Battlefield(int size, Menu menu, Town town, ArrayList<Hero> heroes, ArrayList<ArrayList<Character>> map, HashMap<Character, Double> newSigns, int enemiesCount, int beastsCount, boolean dominator) {
@@ -280,13 +282,20 @@ public class Battlefield {
 
     private boolean canMove(int x, int y, Hero hero) {
         double minDis = 0;
-        if (field.get(y).get(x) != '*') {
-            System.out.println("Нельзя останавливаться во всяких небезопасных местах");
+        if (x > size - 1 || y > size - 1 || x < 0 || y < 0) {
+            //System.out.println("Нельзя выходить за границы поля");
+            LOGGER.log(Level.WARNING, "Нельзя выходить за границы поля");
             return false;
         }
-        else if (hero.xPos == x && hero.yPos == y) {
-            System.out.println("Герой не понял вашей шутки, но все же выполнил ваш приказ");
+        if (hero.xPos == x && hero.yPos == y) {
+            //System.out.println("Герой не понял вашей шутки, но все же выполнил ваш приказ");
+            LOGGER.log(Level.INFO, "Герой не понял вашей шутки, но все же выполнил ваш приказ");
             return true;
+        }
+        else if (field.get(y).get(x) != '*') {
+            //System.out.println("Нельзя останавливаться во всяких небезопасных местах");
+            LOGGER.log(Level.WARNING, "Нельзя останавливаться во всяких небезопасных местах");
+            return false;
         }
         else if (hero.yPos == y) {
             for (int i = Math.min(x, hero.xPos); i <= Math.max(x, hero.xPos); i++) {
@@ -295,15 +304,18 @@ public class Battlefield {
                 else if (signsHash.get(hero.type).containsKey(field.get(y).get(i)))
                     minDis += signsHash.get(hero.type).get(field.get(y).get(i)) * hero.obstaclesRatio;
                 else if (field.get(y).get(i) >= 97 && field.get(y).get(i) <= 122) {
-                    System.out.println("Враг преградил дорогу");
+                    //System.out.println("Враг преградил дорогу");
+                    LOGGER.log(Level.WARNING, "Враг преградил дорогу");
                     return false;
                 }
                 else if (field.get(y).get(i) >= 65 && field.get(y).get(i) <= 90) {
-                    System.out.println("Зверь преградил дорогу");
+                    //System.out.println("Зверь преградил дорогу");
+                    LOGGER.log(Level.WARNING, "Зверь преградил дорогу");
                     return false;
                 }
                 else if (field.get(y).get(i) >= 49 && field.get(y).get(i) <= 57) {
-                    System.out.println("Хоть и друг, но пропустить не может...");
+                    //System.out.println("Хоть и друг, но пропустить не может...");
+                    LOGGER.log(Level.WARNING, "Хоть и друг, но пропустить не может...");
                     return false;
                 }
                 else
@@ -315,18 +327,19 @@ public class Battlefield {
             for (int i = Math.min(y, hero.yPos); i <= Math.max(y, hero.yPos); i++) {
                 if (i == hero.yPos)
                     continue;
-                else if (signsHash.get(hero.type).containsKey(field.get(y).get(i)))
-                    minDis += signsHash.get(hero.type).get(field.get(y).get(i)) * hero.obstaclesRatio;
+                else if (signsHash.get(hero.type).containsKey(field.get(i).get(x))) {
+                    minDis += signsHash.get(hero.type).get(field.get(i).get(x)) * hero.obstaclesRatio;
+                }
                 else if (field.get(i).get(x) >= 97 && field.get(i).get(x) <= 122) {
-                    System.out.println("Враг преградил дорогу");
+                    LOGGER.log(Level.WARNING, "Враг преградил дорогу");
                     return false;
                 }
-                else if (field.get(y).get(i) >= 65 && field.get(y).get(i) <= 90) {
-                    System.out.println("Зверь преградил дорогу");
+                else if (field.get(i).get(x) >= 65 && field.get(i).get(x) <= 90) {
+                    LOGGER.log(Level.WARNING, "Зверь преградил дорогу");
                     return false;
                 }
                 else if (field.get(i).get(x) >= 49 && field.get(i).get(x) <= 57) {
-                    System.out.println("Хоть и друг, но пропустить не может...");
+                    LOGGER.log(Level.WARNING, "Хоть и друг, но пропустить не может...");
                     return false;
                 }
                 else
@@ -668,4 +681,5 @@ public class Battlefield {
     public HashMap<Character, Beast> getBeastsObjects() {return beastsObjects;}
     public HashMap<Hero, Integer> getBuffsHash() {return buffsHash;}
     public HashMap<Hero, Integer> getDebuffsHash() {return debuffsHash;}
+    public ArrayList<ArrayList<Character>> getField() {return field;}
 }

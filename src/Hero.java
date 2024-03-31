@@ -66,9 +66,22 @@ public class Hero extends Unit implements Serializable {
     protected boolean debuff(Unit target, Battlefield field) {
         if (Objects.equals(this.type, "wizards")) {
             if (field.canAttack(this, target) && !hasAttacked) {
-                target.movement -= buff;
-                target.damage -= buff;
-                target.armor -= buff;
+
+                if (target.movement < buff)
+                    target.movement = 0;
+                else
+                    target.movement -= buff;
+
+                if (target.damage < buff)
+                    target.damage = 0;
+                else
+                    target.damage -= buff;
+
+                if (target.armor < buff)
+                    target.armor = 0;
+                else
+                    target.armor -= buff;
+
                 hasAttacked = true;
                 field.getDebuffsHash().put((Hero) target, movesBuff);
                 return true;

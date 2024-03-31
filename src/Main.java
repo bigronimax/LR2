@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
     static String PATH = "C://Users/ronim/Downloads/maps/";
@@ -25,6 +27,7 @@ public class Main {
     static String magicAcademyString = "";
     static ArrayList<WorkShop> workShopsArray = new ArrayList<>();
     static int battlesAmount = 0;
+    static Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         System.out.println("1. Начать новую игру\n2. Загрузить игру\n3. Загрузить карту\n4. Выйти");
@@ -56,7 +59,11 @@ public class Main {
             scanner = new Scanner(System.in);
             input = scanner.nextInt();
             if (input == 1) {
-                battle();
+                if (mapChoice)
+                    field = new Battlefield(map.size(), menu, town, heroes, map, newSignsHash, 1, 1, false);
+                else
+                    field = new Battlefield(10, menu, town, heroes, null, newSignsHash, 1, 1, false);
+                battle(field);
                 if (market != null)
                     market.course();
                 if (!workShopsArray.isEmpty()) {
@@ -66,7 +73,7 @@ public class Main {
                 }
             }
             else if (input == 2)
-                heroesChoice();
+                heroesChoice(heroes);
             else if (input == 3)
                 buildings();
             else if (input == 4) {
@@ -94,13 +101,16 @@ public class Main {
                 scanner = new Scanner(System.in);
                 int movement = scanner.nextInt();
                 if (academy.createHero(name, hp, damage, attackRange, armor, movement))
-                    System.out.println("Ваш герой создан!");
+                    //System.out.println("Ваш герой создан!");
+                    LOGGER.log(Level.INFO, "Ваш герой создан!");
                 else
-                    System.out.println("Недостаточно денег для создания...");
+                    //System.out.println("Недостаточно денег для создания...");
+                    LOGGER.log(Level.WARNING, "Недостаточно денег для создания...");
             }
             else if (input == 6 && market != null) {
                 System.out.println(market);
-                System.out.println("Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
+                //System.out.println("Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
+                LOGGER.log(Level.INFO, "Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
                 scanner = new Scanner(System.in);
                 input = scanner.nextInt();
                 System.out.println("Введите количество ресурса для обмена: ");
@@ -110,7 +120,8 @@ public class Main {
                     market.exchangeWood(amount);
                 else if (input == 2)
                     market.exchangeRock(amount);
-                System.out.println("Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
+                //System.out.println("Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
+                LOGGER.log(Level.INFO, "Сейчас у вас:\nwood: " + town.getWood() + ", " + "rock: " + town.getRock());
             }
             else if (input == 7 && magicAcademy != null) {
                 if (menu.getMoney() >= menu.getMenu().get("Wizard").get("cost")) {
@@ -121,14 +132,31 @@ public class Main {
                     }
                     scanner = new Scanner(System.in);
                     name = scanner.nextLine();
-                    if (!magicAcademy.createWizard(name))
-                        System.out.println("Ваш отряд не понял, кому идти в академию. Никто не пошел.");
-
+                    Hero heroMagician = magicAcademy.createWizard(name);
+                    if (heroMagician == null)
+                        //System.out.println("Ваш отряд не понял, кому идти в академию. Никто не пошел.");
+                        LOGGER.log(Level.WARNING, "Ваш отряд не понял, кому идти в академию. Никто не пошел.");
+                    else {
+                        for (String n : buildingsUp.keySet()) {
+                            ArrayList<Hero> magician = new ArrayList<>(List.of(heroMagician));
+                            buildingsUp.get(n).setHeroes(magician);
+                        }
+                    }
                 }
                 else {
-                    System.out.println("Вы слишком бедны, чтобы пользоваться услугами академии. Необходимо минимум 20 крон");
+                    //System.out.println("Вы слишком бедны, чтобы пользоваться услугами академии. Необходимо минимум 20 крон");
+                    LOGGER.log(Level.WARNING, "Вы слишком бедны, чтобы пользоваться услугами академии. Необходимо минимум 20 крон");
                 }
 
+            }
+        }
+    }
+
+    public static void buildingsUpgrades(Hero hero) {
+        for (String s: buildingsUp.keySet()) {
+            int level = buildingsUp.get(s).getLevel();
+            for (int i = 0; i < level; i++) {
+                buildingsUp.get(s).upgradeHero(hero);
             }
         }
     }
@@ -139,6 +167,7 @@ public class Main {
             if (field.getBuffsHash().get(hero) == 0) {
                 field.getBuffsHash().remove(hero);
                 hero.setDefaultProps();
+                buildingsUpgrades(hero);
             }
         }
         for (Hero hero: field.getDebuffsHash().keySet()) {
@@ -146,6 +175,7 @@ public class Main {
             if (field.getDebuffsHash().get(hero) == 0) {
                 field.getDebuffsHash().remove(hero);
                 hero.setDefaultProps();
+                buildingsUpgrades(hero);
             }
         }
     }
@@ -208,7 +238,8 @@ public class Main {
                 if (buildingsString.contains(","))
                     buildingsNames = new ArrayList<>(Arrays.asList(buildingsString.split(", ")));
                 else if (buildingsString.isEmpty()) {
-                    System.out.println("Не хотите, как хотите...");
+                    //System.out.println("Не хотите, как хотите...");
+                    LOGGER.log(Level.WARNING, "Не хотите, как хотите...");
                     break;
                 }
                 else
@@ -217,13 +248,15 @@ public class Main {
                 ArrayList<String> buildingsTmp = new ArrayList<>(buildingsNames);
                 for (String name: buildingsTmp) {
                     if (!town.getObtainableBuildings().contains(name)) {
-                        System.out.println("Вы обидели владельца здания, поэтому его не удалось купить/улучшить");
+                        //System.out.println("Вы обидели владельца здания, поэтому его не удалось купить/улучшить");
+                        LOGGER.log(Level.WARNING, "Вы обидели владельца здания, поэтому его не удалось купить/улучшить");
                         buildingsNames.remove(name);
                     }
                 }
 
                 if (buildingsNames.isEmpty()) {
-                    System.out.println("Не хотите, как хотите...");
+                    //System.out.println("Не хотите, как хотите...");
+                    LOGGER.log(Level.WARNING, "Не хотите, как хотите...");
                     break;
                 }
 
@@ -232,7 +265,8 @@ public class Main {
                     buildingsRockCost += town.getBuildingsPrices().get(name).get("rock");
                 }
                 if (buildingsWoodCost > town.getWood() || buildingsRockCost > town.getRock()) {
-                    System.out.println("Вы чересчур расточительны. Убедитесь, что вы тратитесь на имеющиеся ресурсы без кредитов");
+                    //System.out.println("Вы чересчур расточительны. Убедитесь, что вы тратитесь на имеющиеся ресурсы без кредитов");
+                    LOGGER.log(Level.WARNING, "Вы чересчур расточительны. Убедитесь, что вы тратитесь на имеющиеся ресурсы без кредитов");
                     continue;
                 }
                 town.setWood(town.getWood() - buildingsWoodCost);
@@ -240,7 +274,8 @@ public class Main {
 
                 for (String name: buildingsNames) {
                     if (Objects.equals(name, "tavern")) {
-                        System.out.println("Вы выбрали таверну, хотите прокачать перемещение или снизить штрафы?");
+                        //System.out.println("Вы выбрали таверну, хотите прокачать перемещение или снизить штрафы?");
+                        LOGGER.log(Level.INFO, "Вы выбрали таверну, хотите прокачать перемещение или снизить штрафы?");
                         System.out.println("1. Перемещение\n2. Штрафы");
                         scanner = new Scanner(System.in);
                         int input = scanner.nextInt();
@@ -302,12 +337,8 @@ public class Main {
         }
     }
 
-    public static void battle() throws IOException {
+    public static void battle(Battlefield field) throws IOException {
 
-        if (mapChoice)
-            field = new Battlefield(map.size(), menu, town, heroes, map, newSignsHash, 1, 1, false);
-        else
-            field = new Battlefield(10, menu, town, heroes, null, newSignsHash, 1, 1, false);
         heroesObjects = field.getHeroesObjects();
         HashMap<Character, Enemy> enemiesObjects = field.getEnemiesObjects();
         HashMap<Character, Beast> beastsObjects = field.getBeastsObjects();
@@ -348,7 +379,8 @@ public class Main {
                         int yPos = Integer.parseInt(crd.get(1));
                         if (hero.move(xPos, yPos, field)) {
                             logInfo = "Герой: " + hero.name + " переместился на клетку: " + xPos + " " + yPos;
-                            System.out.println(logInfo);
+                            //System.out.println(logInfo);
+                            LOGGER.log(Level.INFO, logInfo);
                             log += logInfo + "\n";
                         }
                     }
@@ -371,16 +403,19 @@ public class Main {
                         targetHp = beastsObjects.get(target_sign).hp;
                         if (hero.attack(beastsObjects.get(target_sign), field)) {
                             logInfo = "Герой: " + hero.name + " атаковал " + targetName;
-                            System.out.println(logInfo);
+                            //System.out.println(logInfo);
+                            LOGGER.log(Level.INFO, logInfo);
                             log += logInfo + "\n";
                             if (targetHp - hero.damage <= 0) {
                                 logInfo = targetName + " помер...";
-                                System.out.println(logInfo);
+                                //System.out.println(logInfo);
+                                LOGGER.log(Level.INFO, logInfo);
                                 log += logInfo + "\n";
                             }
                         }
                         else {
-                            System.out.println("Фигово атакуешь");
+                            //System.out.println("Фигово атакуешь");
+                            LOGGER.log(Level.WARNING, "Фигово атакуешь");
                         }
                     }
                     else if (target_sign >= 97 && target_sign <= 122 && (!Objects.equals(hero.type, "wizards"))) {
@@ -388,16 +423,19 @@ public class Main {
                         targetHp = enemiesObjects.get(target_sign).hp;
                         if (hero.attack(enemiesObjects.get(target_sign), field)) {
                             logInfo = "Герой: " + hero.name + " атаковал " + targetName;
-                            System.out.println(logInfo);
+                            //System.out.println(logInfo);
+                            LOGGER.log(Level.INFO, logInfo);
                             log += logInfo + "\n";
                             if (targetHp - hero.damage <= 0) {
                                 logInfo = targetName + " помер...";
-                                System.out.println(logInfo);
+                               // System.out.println(logInfo);
+                                LOGGER.log(Level.INFO, logInfo);
                                 log += logInfo + "\n";
                             }
                         }
                         else {
-                            System.out.println("Фигово атакуешь");
+                            //System.out.println("Фигово атакуешь");
+                            LOGGER.log(Level.WARNING, "Фигово атакуешь");
                         }
                     }
                     else if (target_sign >= 49 && target_sign <= 57 && (Objects.equals(hero.type, "wizards"))) {
@@ -405,11 +443,13 @@ public class Main {
                         if (Objects.equals(hero.name, "Wizard")) {
                             if (hero.buff(heroesObjects.get(target_sign), field)) {
                                 logInfo = "Герой: " + hero.name + " оказал поддержку " + targetName;
-                                System.out.println(logInfo);
+                                //System.out.println(logInfo);
+                                LOGGER.log(Level.INFO, logInfo);
                                 log += logInfo + "\n";
                             }
                             else {
-                                System.out.println("Посох короткий...");
+                                //System.out.println("Посох короткий...");
+                                LOGGER.log(Level.WARNING, "Посох короткий...");
                             }
                         }
                         else if (Objects.equals(hero.name, "Necromancer")) {
@@ -417,32 +457,38 @@ public class Main {
                             if (random < 50) {
                                 if (hero.debuff(heroesObjects.get(target_sign), field)) {
                                     logInfo = "Герой: " + hero.name + " наложил проклятие " + targetName + ". Получить поддержку: >=50/100. Выпало: " + random;
-                                    System.out.println(logInfo);
+                                    //System.out.println(logInfo);
+                                    LOGGER.log(Level.INFO, logInfo);
                                     log += logInfo + "\n";
                                 }
                                 else {
-                                    System.out.println("Посох короткий...");
+                                    //System.out.println("Посох короткий...");
+                                    LOGGER.log(Level.WARNING, "Посох короткий...");
                                 }
                             }
                             else {
                                 if (hero.buff(heroesObjects.get(target_sign), field)) {
                                     logInfo = "Герой: " + hero.name + " оказал поддержку " + targetName + ". Получить поддержку: >=50/100. Выпало: " + random;
-                                    System.out.println(logInfo);
+                                    //System.out.println(logInfo);
+                                    LOGGER.log(Level.INFO, logInfo);
                                     log += logInfo + "\n";
                                 }
                                 else {
-                                    System.out.println("Посох короткий...");
+                                    //System.out.println("Посох короткий...");
+                                    LOGGER.log(Level.WARNING, "Посох короткий...");
                                 }
                             }
                         }
                     }
                     else {
-                        System.out.println("Нельзя");
+                        //System.out.println("Нельзя");
+                        LOGGER.log(Level.WARNING, "Нельзя");
                     }
 
                 }
                 else {
-                    System.out.println("Нельзя");
+                    //System.out.println("Нельзя");
+                    LOGGER.log(Level.WARNING, "Нельзя");
                 }
                 if (field.getMoves() + field.getAttacks() != 0)
                     System.out.println(field);
@@ -450,48 +496,9 @@ public class Main {
             if (field.getEnemyCount() + field.getBeastsCount() == 0)
                 break;
 
+            enemiesBehavior(heroesObjects, enemiesObjects, beastsObjects, field, log);
+
             boolean hasAttacked;
-            for (Character keyEnemy: enemiesObjects.keySet()) {
-                hasAttacked = false;
-                Set<Character> unionSet = new HashSet<>();
-                unionSet.addAll(heroesObjects.keySet());
-                unionSet.addAll(beastsObjects.keySet());
-                ArrayList<Character> keys = new ArrayList<>(unionSet);
-                while(!keys.isEmpty()) {
-                    Unit unit;
-                    int ind = (int) (Math.random() * keys.size());
-                    if (heroesObjects.containsKey(keys.get(ind)))
-                        unit = heroesObjects.get(keys.get(ind));
-                    else
-                        unit = beastsObjects.get(keys.get(ind));
-                    int unitHp = unit.hp;
-                    if (enemiesObjects.get(keyEnemy).attack(unit, field)) {
-                        hasAttacked = true;
-                        logInfo = "Враг: " + enemiesObjects.get(keyEnemy).name + " атаковал: " + unit.name;
-                        System.out.println(logInfo);
-                        log += logInfo + "\n";
-                        if (unitHp - enemiesObjects.get(keyEnemy).damage <= 0) {
-                            logInfo = unit.name + " помер...";
-                            System.out.println(logInfo);
-                            log += logInfo + "\n";
-                        }
-                        break;
-                    }
-                    else {
-                        keys.remove(ind);
-                    }
-
-                }
-
-                if (!hasAttacked) {
-                    enemiesObjects.get(keyEnemy).move(field);
-                    int xPos = enemiesObjects.get(keyEnemy).xPos + 1;
-                    int yPos = enemiesObjects.get(keyEnemy).yPos + 1;
-                    logInfo = "Враг: " + enemiesObjects.get(keyEnemy).name + " переместился на клетку: " + xPos + " " + yPos;
-                    System.out.println(logInfo);
-                    log += logInfo + "\n";
-                }
-            }
             for (Character keyBeast: beastsObjects.keySet()) {
                 hasAttacked = false;
                 Set<Character> unionSet = new HashSet<>();
@@ -509,11 +516,13 @@ public class Main {
                     if (beastsObjects.get(keyBeast).attack(unit, field)) {
                         hasAttacked = true;
                         logInfo = "Зверь: " + beastsObjects.get(keyBeast).name + " атаковал: " + unit.name;
-                        System.out.println(logInfo);
+                        //System.out.println(logInfo);
+                        LOGGER.log(Level.INFO, logInfo);
                         log += logInfo + "\n";
                         if (unitHp - beastsObjects.get(keyBeast).damage <= 0) {
                             logInfo = unit.name + " помер...";
-                            System.out.println(logInfo);
+                            //System.out.println(logInfo);
+                            LOGGER.log(Level.INFO, logInfo);
                             log += logInfo + "\n";
                         }
                         break;
@@ -529,7 +538,8 @@ public class Main {
                     int xPos = beastsObjects.get(keyBeast).xPos + 1;
                     int yPos = beastsObjects.get(keyBeast).yPos + 1;
                     logInfo = "Зверь: " + beastsObjects.get(keyBeast).name + " переместился на клетку: " + xPos + " " + yPos;
-                    System.out.println(logInfo);
+                    //System.out.println(logInfo);
+                    LOGGER.log(Level.INFO, logInfo);
                     log += logInfo + "\n";
                 }
             }
@@ -541,22 +551,26 @@ public class Main {
         }
         for (Hero hero: heroes) {
             hero.setDefaultProps();
+            buildingsUpgrades(hero);
         }
         if (field.getEnemyCount() + field.getBeastsCount() == 0) {
             logInfo = "Победа героев!";
-            System.out.println(logInfo);
+            //System.out.println(logInfo);
+            LOGGER.log(Level.INFO, logInfo);
             log += logInfo;
             menu.setMoney(menu.getMoney() + ((int) (Math.random() * 5) + 1));
         }
         else if (field.getHeroesCount() + field.getEnemyCount() == 0) {
             logInfo = "Победа зверей!";
-            System.out.println(logInfo);
+            //System.out.println(logInfo);
+            LOGGER.log(Level.INFO, logInfo);
             log += logInfo;
             menu.setMoney(menu.getMoney() + ((int) (Math.random() * 5) + 1));
         }
         else if (field.getHeroesCount() + field.getBeastsCount() == 0) {
             logInfo = "Победа врагов!";
-            System.out.println(logInfo);
+            //System.out.println(logInfo);
+            LOGGER.log(Level.INFO, logInfo);
             log += logInfo;
             menu.setMoney(menu.getMoney() + ((int) (Math.random() * 5) + 1));
         }
@@ -570,18 +584,71 @@ public class Main {
 
     }
 
-    public static void heroesChoice() {
+    public static void enemiesBehavior(HashMap<Character, Hero> heroesObjects,
+                                       HashMap<Character, Enemy> enemiesObjects,
+                                       HashMap<Character, Beast> beastsObjects,
+                                       Battlefield field,
+                                       String log) {
+        boolean hasAttacked;
+        for (Character keyEnemy: enemiesObjects.keySet()) {
+            hasAttacked = false;
+            Set<Character> unionSet = new HashSet<>();
+            unionSet.addAll(heroesObjects.keySet());
+            unionSet.addAll(beastsObjects.keySet());
+            ArrayList<Character> keys = new ArrayList<>(unionSet);
+            while(!keys.isEmpty()) {
+                Unit unit;
+                int ind = (int) (Math.random() * keys.size());
+                if (heroesObjects.containsKey(keys.get(ind)))
+                    unit = heroesObjects.get(keys.get(ind));
+                else
+                    unit = beastsObjects.get(keys.get(ind));
+                int unitHp = unit.hp;
+                if (enemiesObjects.get(keyEnemy).attack(unit, field)) {
+                    hasAttacked = true;
+                    String logInfo = "Враг: " + enemiesObjects.get(keyEnemy).name + " атаковал: " + unit.name;
+                    //System.out.println(logInfo);
+                    LOGGER.log(Level.INFO, logInfo);
+                    log += logInfo + "\n";
+                    if (unitHp - enemiesObjects.get(keyEnemy).damage <= 0) {
+                        logInfo = unit.name + " помер...";
+                        //System.out.println(logInfo);
+                        LOGGER.log(Level.INFO, logInfo);
+                        log += logInfo + "\n";
+                    }
+                    break;
+                }
+                else {
+                    keys.remove(ind);
+                }
+
+            }
+
+            if (!hasAttacked) {
+                enemiesObjects.get(keyEnemy).move(field);
+                int xPos = enemiesObjects.get(keyEnemy).xPos + 1;
+                int yPos = enemiesObjects.get(keyEnemy).yPos + 1;
+                String logInfo = "Враг: " + enemiesObjects.get(keyEnemy).name + " переместился на клетку: " + xPos + " " + yPos;
+                //System.out.println(logInfo);
+                LOGGER.log(Level.INFO, logInfo);
+                log += logInfo + "\n";
+            }
+        }
+    }
+
+    public static void heroesChoice(ArrayList<Hero> heroes) {
         while (true) {
             Scanner sc = new Scanner(System.in);
-            int heroesCost = 0;
             System.out.println(menu);
             if (!menu.getObtainableHeroes().isEmpty()) {
-                System.out.println("Казна предоставила вам " + menu.getMoney() + " крон. Выберите себе героев (через запятую или пробел): ");
+                //System.out.println("Казна предоставила вам " + menu.getMoney() + " крон. Выберите себе героев (через запятую или пробел): ");
+                LOGGER.log(Level.INFO, "Казна предоставила вам " + menu.getMoney() + " крон. Выберите себе героев (через запятую или пробел): ");
                 String heroesString = sc.nextLine();
                 if (heroesString.contains(","))
                     heroesNames = new ArrayList<>(Arrays.asList(heroesString.split(", ")));
                 else if (heroesString.isEmpty()) {
-                    System.out.println("Не хотите, как хотите...");
+                    //System.out.println("Не хотите, как хотите...");
+                    LOGGER.log(Level.WARNING, "Не хотите, как хотите...");
                     break;
                 }
                 else
@@ -590,22 +657,18 @@ public class Main {
                 ArrayList<String> heroesTmp = new ArrayList<>(heroesNames);
                 for (String name: heroesTmp) {
                     if (!menu.getObtainableHeroes().contains(name)) {
-                        System.out.println("Вы обидели одного из героев, он не вступает в вашу команду");
+                        //System.out.println("Вы обидели одного из героев, он не вступает в вашу команду");
+                        LOGGER.log(Level.WARNING, "Вы обидели одного из героев, он не вступает в вашу команду");
                         heroesNames.remove(name);
                     }
                 }
                 if (heroesNames.isEmpty()) {
-                    System.out.println("Не хотите, как хотите...");
+                    //System.out.println("Не хотите, как хотите...");
+                    LOGGER.log(Level.WARNING, "Не хотите, как хотите...");
                     break;
                 }
-                for (String hero : heroesNames) {
-                    heroesCost += menu.getMenu().get(hero).get("cost");
-                }
-                if (heroesCost > menu.getMoney()) {
-                    System.out.println("Вы чересчур расточительны. Убедитесь, что вы собираете команду на имеющиеся деньги без кредитов");
+                if (!checkHeroesCost(menu, heroesNames))
                     continue;
-                }
-                menu.setMoney(menu.getMoney() - heroesCost);
 
                 for (String name: heroesNames) {
                     Hero hero = new Hero(name, menu);
@@ -622,6 +685,20 @@ public class Main {
                 break;
             }
         }
+    }
+
+    public static boolean checkHeroesCost(Menu menu, ArrayList<String> heroesNames) {
+        int heroesCost = 0;
+        for (String hero : heroesNames) {
+            heroesCost += menu.getMenu().get(hero).get("cost");
+        }
+        if (heroesCost > menu.getMoney()) {
+            //System.out.println("Вы чересчур расточительны. Убедитесь, что вы собираете команду на имеющиеся деньги без кредитов");
+            LOGGER.log(Level.WARNING, "Вы чересчур расточительны. Убедитесь, что вы собираете команду на имеющиеся деньги без кредитов");
+            return false;
+        }
+        menu.setMoney(menu.getMoney() - heroesCost);
+        return true;
     }
 
     public static void loadMap() {

@@ -23,7 +23,7 @@ public class MagicAcademy implements Serializable {
         return output;
     }
 
-    public boolean createWizard(String name) {
+    public Hero createWizard(String name) {
         int cost = menu.getMenu().get("Wizard").get("cost");
         boolean flag = false;
         for (Hero hero: heroes) {
@@ -33,21 +33,24 @@ public class MagicAcademy implements Serializable {
                 break;
             }
         }
+        Hero magician;
         if (flag) {
             int random = (int) (Math.random() * 100) + 1;
             if (random < 50) {
-                heroes.add(new Hero("Necromancer", menu, buff, movesBuff));
+                magician = new Hero("Necromancer", menu, buff, movesBuff);
+                heroes.add(magician);
                 System.out.println("Получить мага: >=50/100. Выпало: " + random + ". Некромант вступил в ваш отряд!");
             }
             else {
-                heroes.add(new Hero("Wizard", menu, buff, movesBuff));
+                magician = new Hero("Wizard", menu, buff, movesBuff);
+                heroes.add(magician);
                 System.out.println("Получить мага: >=50/100. Выпало: " + random + ". Маг вступил в ваш отряд!");
             }
             menu.setMoney(menu.getMoney() - cost);
-            return true;
+            return magician;
         }
         else {
-            return false;
+            return null;
         }
     }
 
